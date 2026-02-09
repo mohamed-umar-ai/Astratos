@@ -1,278 +1,205 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import Sidebar from '../components/Sidebar';
-import { pageTransition, staggerContainer, staggerItem, cardHover } from '../utils/animations';
 import wsClient from '../utils/websocket';
+import Sidebar from '../components/Sidebar';
+import { fadeInUp, staggerContainer } from '../utils/animations';
+
+const StatCard = ({ title, value, color, delay }) => (
+    <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay, duration: 0.5 }}
+        className="glass p-6 rounded-2xl border border-white/5 relative overflow-hidden"
+    >
+        <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full opacity-10 ${color}`} />
+        <h3 className="text-slate-400 font-medium mb-2">{title}</h3>
+        <div className="text-4xl font-bold">{value.toLocaleString()}</div>
+        <div className="text-xs text-green-400 mt-2 flex items-center gap-1">
+            <span>▲</span> +{(Math.random() * 5).toFixed(1)}% since last hour
+        </div>
+    </motion.div>
+);
+
+const ChartPlaceholder = ({ color }) => (
+    <div className="h-48 flex items-end gap-2 mt-4">
+        {[...Array(12)].map((_, i) => (
+            <motion.div
+                key={i}
+                initial={{ height: '0%' }}
+                animate={{ height: `${Math.random() * 80 + 20}%` }}
+                transition={{ duration: 1, delay: i * 0.05 }}
+                className={`flex-1 rounded-t-sm opacity-50 ${color}`}
+            />
+        ))}
+    </div>
+);
 
 const Dashboard = () => {
     const [metrics, setMetrics] = useState({
-        activeUsers: 0,
-        ordersPerMinute: 0,
-        revenue: 0,
-        systemHealth: { cpu: 0, memory: 0, responseTime: 0 }
+        inventory: 100000,
+        sales: 70000,
+        suppliers: 200,
+        anomalies: 12
     });
-    const [alerts, setAlerts] = useState([]);
-    const [isConnected, setIsConnected] = useState(false);
 
     useEffect(() => {
-        // Connect to WebSocket
         wsClient.connect();
-
-        // Listen for connection status
-        const unsubConnection = wsClient.on('connection', (data) => {
-            setIsConnected(data.status === 'connected');
-        });
-
-        // Listen for simulation updates
-        const unsubUpdate = wsClient.on('SIMULATION_UPDATE', (data) => {
-            setMetrics(data.metrics);
-            if (data.alerts && data.alerts.length > 0) {
-                setAlerts(prev => [...data.alerts, ...prev].slice(0, 5));
+        const handleUpdate = (data) => {
+            if (data.metrics) {
+                setMetrics({
+                    inventory: data.metrics.inventory,
+                    sales: data.metrics.sales,
+                    suppliers: data.metrics.suppliers,
+                    anomalies: data.metrics.anomalies
+                });
             }
-        });
-
-        return () => {
-            unsubConnection();
-            unsubUpdate();
-            wsClient.disconnect();
         };
+        const unsubscribe = wsClient.on('SIMULATION_UPDATE', handleUpdate);
+        return () => unsubscribe();
     }, []);
 
-    const statCards = [
-        {
-            title: 'Active Users',
-            value: metrics.activeUsers,
-            icon: '👥',
-            color: 'from-blue-500 to-cyan-500',
-            suffix: ''
-        },
-        {
-            title: 'Orders/Min',
-            value: metrics.ordersPerMinute,
-            icon: '📦',
-            color: 'from-green-500 to-emerald-500',
-            suffix: ''
-        },
-        {
-            title: 'Revenue',
-            value: metrics.revenue,
-            icon: '💰',
-            color: 'from-purple-500 to-pink-500',
-            suffix: '$',
-            prefix: true
-        },
-        {
-            title: 'Response Time',
-            value: metrics.systemHealth.responseTime,
-            icon: '⚡',
-            color: 'from-orange-500 to-yellow-500',
-            suffix: 'ms'
-        }
-    ];
-
     return (
-        <div className="min-h-screen flex">
+        <div className="min-h-screen bg-slate-950 text-white flex">
             <Sidebar />
 
-            <motion.main
-                {...pageTransition}
-                className="flex-1 lg:ml-64 p-6"
-            >
-                {/* Header */}
-                <div className="flex items-center justify-between mb-8">
-                    <div>
-                        <h1 className="text-3xl font-bold">Dashboard</h1>
-                        <p className="text-slate-400 mt-1">Real-time inventory overview</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400 pulse' : 'bg-red-400'}`} />
-                        <span className="text-sm text-slate-400">
-                            {isConnected ? 'Live' : 'Disconnected'}
-                        </span>
-                    </div>
-                </div>
+            <main className="flex-1 ml-0 md:ml-0 p-8 pt-20 transition-all duration-300">
+                {/* Note: Sidebar is now overlay/slide-in, so standard margin might not apply or be different. 
+                    Based on Sidebar component, it's fixed slide-in. So main content is full width.
+                */}
 
-                {/* Stats Grid */}
-                <motion.div
-                    variants={staggerContainer}
-                    initial="hidden"
-                    animate="visible"
-                    className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
-                >
-                    {statCards.map((card, index) => (
-                        <motion.div
-                            key={index}
-                            variants={staggerItem}
-                            initial="rest"
-                            whileHover="hover"
-                            className="glass rounded-2xl p-6 card-hover"
-                        >
-                            <div className="flex items-center justify-between mb-4">
-                                <span className="text-3xl">{card.icon}</span>
-                                <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${card.color} opacity-20`} />
-                            </div>
-                            <div className="text-2xl font-bold mb-1">
-                                {card.prefix && card.suffix}
-                                <motion.span
-                                    key={card.value}
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.3 }}
-                                >
-                                    {typeof card.value === 'number' ? card.value.toLocaleString() : card.value}
-                                </motion.span>
-                                {!card.prefix && card.suffix}
-                            </div>
-                            <div className="text-sm text-slate-400">{card.title}</div>
+                <div className="container mx-auto max-w-5xl">
+                    <header className="mb-12 flex justify-between items-end">
+                        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+                            <h1 className="text-4xl font-bold mb-2">Dashboard</h1>
+                            <p className="text-slate-400">Real-time overview of your supply chain</p>
                         </motion.div>
-                    ))}
-                </motion.div>
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="btn-primary"
+                        >
+                            Generate Report
+                        </motion.button>
+                    </header>
 
-                {/* System Health & Alerts */}
-                <div className="grid lg:grid-cols-3 gap-6 mb-8">
-                    {/* System Health */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                        className="lg:col-span-2 glass rounded-2xl p-6"
-                    >
-                        <h2 className="text-xl font-semibold mb-6">System Health</h2>
-                        <div className="grid sm:grid-cols-3 gap-6">
-                            <div>
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className="text-slate-400">CPU Usage</span>
-                                    <span className="font-semibold">{metrics.systemHealth.cpu}%</span>
+                    {/* Stacked Sections as requested */}
+                    <div className="space-y-8">
+
+                        {/* 1. Inventory Overview */}
+                        <motion.section
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.8 }}
+                            className="glass p-8 rounded-3xl border border-white/5"
+                        >
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-2xl font-bold">Inventory Overview</h2>
+                                <span className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm">
+                                    Total Items: {metrics.inventory.toLocaleString()}
+                                </span>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                <div className="col-span-2">
+                                    <ChartPlaceholder color="bg-blue-500" />
                                 </div>
-                                <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-                                    <motion.div
-                                        className={`h-full rounded-full ${metrics.systemHealth.cpu > 80 ? 'bg-red-500' :
-                                                metrics.systemHealth.cpu > 60 ? 'bg-yellow-500' : 'bg-green-500'
-                                            }`}
-                                        initial={{ width: 0 }}
-                                        animate={{ width: `${metrics.systemHealth.cpu}%` }}
-                                        transition={{ duration: 0.5 }}
-                                    />
+                                <div className="space-y-4">
+                                    <div className="p-4 bg-white/5 rounded-xl">
+                                        <div className="text-sm text-slate-400">Stock Value</div>
+                                        <div className="text-2xl font-bold text-blue-400">$2.4M</div>
+                                    </div>
+                                    <div className="p-4 bg-white/5 rounded-xl">
+                                        <div className="text-sm text-slate-400">Low Stock SKUs</div>
+                                        <div className="text-2xl font-bold text-yellow-400">14</div>
+                                    </div>
+                                    <div className="p-4 bg-white/5 rounded-xl">
+                                        <div className="text-sm text-slate-400">Turnover Rate</div>
+                                        <div className="text-2xl font-bold text-green-400">4.2x</div>
+                                    </div>
                                 </div>
                             </div>
-                            <div>
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className="text-slate-400">Memory</span>
-                                    <span className="font-semibold">{metrics.systemHealth.memory}%</span>
-                                </div>
-                                <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-                                    <motion.div
-                                        className={`h-full rounded-full ${metrics.systemHealth.memory > 80 ? 'bg-red-500' :
-                                                metrics.systemHealth.memory > 60 ? 'bg-yellow-500' : 'bg-green-500'
-                                            }`}
-                                        initial={{ width: 0 }}
-                                        animate={{ width: `${metrics.systemHealth.memory}%` }}
-                                        transition={{ duration: 0.5 }}
-                                    />
-                                </div>
-                            </div>
-                            <div>
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className="text-slate-400">Latency</span>
-                                    <span className="font-semibold">{metrics.systemHealth.responseTime}ms</span>
-                                </div>
-                                <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-                                    <motion.div
-                                        className={`h-full rounded-full ${metrics.systemHealth.responseTime > 200 ? 'bg-red-500' :
-                                                metrics.systemHealth.responseTime > 100 ? 'bg-yellow-500' : 'bg-green-500'
-                                            }`}
-                                        initial={{ width: 0 }}
-                                        animate={{ width: `${Math.min(metrics.systemHealth.responseTime / 3, 100)}%` }}
-                                        transition={{ duration: 0.5 }}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </motion.div>
+                        </motion.section>
 
-                    {/* Recent Alerts */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 }}
-                        className="glass rounded-2xl p-6"
-                    >
-                        <h2 className="text-xl font-semibold mb-4">Recent Alerts</h2>
-                        <div className="space-y-3">
-                            {alerts.length === 0 ? (
-                                <p className="text-slate-500 text-sm">No recent alerts</p>
-                            ) : (
-                                alerts.map((alert, index) => (
+                        {/* 2. Sales Visualization */}
+                        <motion.section
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.8, delay: 0.2 }}
+                            className="glass p-8 rounded-3xl border border-white/5"
+                        >
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-2xl font-bold">Sales Performance</h2>
+                                <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm">
+                                    Active Sales: {metrics.sales.toLocaleString()}
+                                </span>
+                            </div>
+                            <div className="h-64 rounded-xl bg-gradient-to-r from-green-500/10 to-emerald-500/5 relative overflow-hidden flex items-end px-4 gap-1">
+                                {[...Array(24)].map((_, i) => (
                                     <motion.div
-                                        key={alert.id}
-                                        initial={{ opacity: 0, x: -20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        className={`p-3 rounded-lg ${alert.type === 'warning' ? 'bg-yellow-500/10 border-l-2 border-yellow-500' :
-                                                alert.type === 'success' ? 'bg-green-500/10 border-l-2 border-green-500' :
-                                                    'bg-blue-500/10 border-l-2 border-blue-500'
-                                            }`}
-                                    >
-                                        <p className="text-sm">{alert.text}</p>
-                                        <p className="text-xs text-slate-500 mt-1">
-                                            {new Date(alert.timestamp).toLocaleTimeString()}
-                                        </p>
-                                    </motion.div>
-                                ))
-                            )}
-                        </div>
-                    </motion.div>
-                </div>
-
-                {/* Inventory Table */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                    className="glass rounded-2xl p-6"
-                >
-                    <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-xl font-semibold">Inventory Overview</h2>
-                        <button className="btn-secondary text-sm px-4 py-2">View All</button>
-                    </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead>
-                                <tr className="text-left text-slate-400 text-sm border-b border-slate-700">
-                                    <th className="pb-4 font-medium">Item</th>
-                                    <th className="pb-4 font-medium">Category</th>
-                                    <th className="pb-4 font-medium">Quantity</th>
-                                    <th className="pb-4 font-medium">Status</th>
-                                    <th className="pb-4 font-medium">Last Updated</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-800">
-                                {[
-                                    { name: 'Widget Pro', category: 'Electronics', qty: 245, status: 'In Stock' },
-                                    { name: 'Gadget X', category: 'Electronics', qty: 12, status: 'Low Stock' },
-                                    { name: 'Component A', category: 'Parts', qty: 890, status: 'In Stock' },
-                                    { name: 'Module Z', category: 'Parts', qty: 0, status: 'Out of Stock' },
-                                    { name: 'Device Pro', category: 'Hardware', qty: 156, status: 'In Stock' }
-                                ].map((item, index) => (
-                                    <tr key={index} className="data-row">
-                                        <td className="py-4 font-medium">{item.name}</td>
-                                        <td className="py-4 text-slate-400">{item.category}</td>
-                                        <td className="py-4">{item.qty}</td>
-                                        <td className="py-4">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${item.status === 'In Stock' ? 'bg-green-500/20 text-green-400' :
-                                                    item.status === 'Low Stock' ? 'bg-yellow-500/20 text-yellow-400' :
-                                                        'bg-red-500/20 text-red-400'
-                                                }`}>
-                                                {item.status}
-                                            </span>
-                                        </td>
-                                        <td className="py-4 text-slate-500 text-sm">Just now</td>
-                                    </tr>
+                                        key={i}
+                                        className="flex-1 bg-green-500/50 hover:bg-green-400 transition-colors rounded-t"
+                                        initial={{ height: '0%' }}
+                                        animate={{ height: `${Math.random() * 60 + 20}%` }}
+                                        transition={{ duration: 1, delay: 0.2 + i * 0.02 }}
+                                    />
                                 ))}
-                            </tbody>
-                        </table>
+                            </div>
+                        </motion.section>
+
+                        {/* 3. Suppliers & Network */}
+                        <motion.section
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.8, delay: 0.4 }}
+                            className="grid grid-cols-1 md:grid-cols-2 gap-8"
+                        >
+                            <div className="glass p-8 rounded-3xl border border-white/5">
+                                <h2 className="text-2xl font-bold mb-6">Supplier Network</h2>
+                                <div className="flex items-center justify-center">
+                                    <div className="relative w-48 h-48">
+                                        <svg viewBox="0 0 100 100" className="w-full h-full rotate-[-90deg]">
+                                            <circle cx="50" cy="50" r="45" fill="none" stroke="#1e293b" strokeWidth="10" />
+                                            <motion.circle
+                                                cx="50" cy="50" r="45" fill="none" stroke="#8b5cf6" strokeWidth="10"
+                                                strokeDasharray="283"
+                                                strokeDashoffset="70"
+                                                initial={{ strokeDashoffset: 283 }}
+                                                animate={{ strokeDashoffset: 283 - (283 * 0.75) }}
+                                                transition={{ duration: 1.5 }}
+                                            />
+                                        </svg>
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                            <div className="text-3xl font-bold">{metrics.suppliers}</div>
+                                            <div className="text-xs text-slate-400">Active Partners</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="glass p-8 rounded-3xl border border-white/5">
+                                <h2 className="text-2xl font-bold mb-6">System Health</h2>
+                                <div className="space-y-6">
+                                    {['API Latency', 'Database Load', 'Error Rate'].map((label, i) => (
+                                        <div key={i}>
+                                            <div className="flex justify-between text-sm mb-2">
+                                                <span className="text-slate-400">{label}</span>
+                                                <span className="text-green-400">Normal</span>
+                                            </div>
+                                            <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                                                <motion.div
+                                                    className="h-full bg-blue-500 rounded-full"
+                                                    initial={{ width: '0%' }}
+                                                    animate={{ width: `${Math.random() * 40 + 30}%` }}
+                                                    transition={{ duration: 1, delay: 0.5 + i * 0.1 }}
+                                                />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </motion.section>
                     </div>
-                </motion.div>
-            </motion.main>
+                </div>
+            </main>
         </div>
     );
 };

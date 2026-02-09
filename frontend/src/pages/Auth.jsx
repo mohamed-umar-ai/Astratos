@@ -1,188 +1,122 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { fadeInUp, staggerContainer, staggerItem } from '../utils/animations';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { pageTransition } from '../utils/animations';
 
 const Auth = () => {
-    const [isLogin, setIsLogin] = useState(true);
+    const [searchParams] = useSearchParams();
+    const isSignup = searchParams.get('mode') === 'signup';
+    const navigate = useNavigate();
+
     const [formData, setFormData] = useState({
         email: '',
-        password: '',
-        name: ''
+        password: ''
     });
-    const [isLoading, setIsLoading] = useState(false);
-    const navigate = useNavigate();
+
+    // Simple mock validation error state
+    const [error, setError] = useState('');
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
+        setError(''); // Clear error on typing
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
-        setIsLoading(true);
 
-        // Mock authentication - simulate API call
-        setTimeout(() => {
-            setIsLoading(false);
-            // Store mock user session
-            localStorage.setItem('astratos_user', JSON.stringify({
-                email: formData.email,
-                name: formData.name || 'Demo User',
-                token: 'mock_token_' + Date.now()
-            }));
-            navigate('/dashboard');
-        }, 1500);
+        // Simple validation
+        if (!formData.email || !formData.password) {
+            setError('Please fill in all required fields.');
+            return;
+        }
+
+        // Mock authentication success
+        // In a real app, you would call an API start session here
+        navigate('/dashboard');
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
-            {/* Background Effects */}
-            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl" />
-            <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-cyan-500/20 rounded-full blur-3xl" />
+        <motion.div
+            {...pageTransition}
+            className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
+        >
+            {/* Background */}
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-900 to-black z-0" />
+            <div className="absolute top-0 left-0 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 z-0 pointer-events-none" />
 
-            <motion.div
-                variants={staggerContainer}
-                initial="hidden"
-                animate="visible"
-                className="relative z-10 w-full max-w-md px-6"
-            >
-                {/* Logo */}
-                <motion.div variants={staggerItem} className="text-center mb-8">
-                    <div className="w-16 h-16 rounded-2xl gradient-primary flex items-center justify-center font-bold text-2xl mx-auto mb-4">
-                        A
-                    </div>
-                    <h1 className="text-3xl font-bold">
-                        {isLogin ? 'Welcome Back' : 'Create Account'}
+            {/* Return to Home */}
+            <Link to="/" className="absolute top-8 left-8 z-20 text-slate-400 hover:text-white flex items-center gap-2">
+                ← Back to Home
+            </Link>
+
+            <div className="relative z-10 w-full max-w-md">
+                <div className="text-center mb-8">
+                    <h1 className="text-3xl font-bold mb-2">
+                        {isSignup ? 'Create Account' : 'Welcome Back'}
                     </h1>
-                    <p className="text-slate-400 mt-2">
-                        {isLogin
-                            ? 'Sign in to access your dashboard'
-                            : 'Join Astratos to get started'}
+                    <p className="text-slate-400">
+                        {isSignup ? 'Join the future of inventory management' : 'Enter your credentials to access dashboard'}
                     </p>
-                </motion.div>
+                </div>
 
-                {/* Auth Form */}
-                <motion.div variants={staggerItem} className="glass rounded-2xl p-8">
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                        <AnimatePresence mode="wait">
-                            {!isLogin && (
-                                <motion.div
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: 'auto' }}
-                                    exit={{ opacity: 0, height: 0 }}
-                                >
-                                    <label className="block text-sm font-medium text-slate-400 mb-2">
-                                        Full Name
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="name"
-                                        value={formData.name}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all"
-                                        placeholder="John Doe"
-                                    />
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-
-                        <div>
-                            <label className="block text-sm font-medium text-slate-400 mb-2">
-                                Email Address
-                            </label>
-                            <input
-                                type="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                required
-                                className="w-full px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all"
-                                placeholder="you@example.com"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-slate-400 mb-2">
-                                Password
-                            </label>
-                            <input
-                                type="password"
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                required
-                                className="w-full px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all"
-                                placeholder="••••••••"
-                            />
-                        </div>
-
-                        {isLogin && (
-                            <div className="text-right">
-                                <a href="#" className="text-sm text-indigo-400 hover:text-indigo-300">
-                                    Forgot password?
-                                </a>
-                            </div>
+                <form onSubmit={handleSubmit} className="flex flex-col gap-4 mx-auto w-96 max-w-full">
+                    <AnimatePresence>
+                        {error && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0 }}
+                                className="bg-red-500/10 border border-red-500/50 text-red-500 px-4 py-2 rounded-lg text-sm text-center"
+                            >
+                                {error}
+                            </motion.div>
                         )}
+                    </AnimatePresence>
 
-                        <motion.button
-                            type="submit"
-                            disabled={isLoading}
-                            whileHover={{ scale: 1.01 }}
-                            whileTap={{ scale: 0.99 }}
-                            className="w-full btn-primary py-4 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {isLoading ? (
-                                <span className="flex items-center justify-center gap-2">
-                                    <motion.span
-                                        animate={{ rotate: 360 }}
-                                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                                        className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-                                    />
-                                    Processing...
-                                </span>
-                            ) : (
-                                isLogin ? 'Sign In' : 'Create Account'
-                            )}
-                        </motion.button>
-                    </form>
-
-                    {/* Divider */}
-                    <div className="flex items-center gap-4 my-6">
-                        <div className="flex-1 h-px bg-slate-700" />
-                        <span className="text-slate-500 text-sm">or</span>
-                        <div className="flex-1 h-px bg-slate-700" />
+                    <div className="space-y-1">
+                        <label className="text-sm font-medium text-slate-300">Email</label>
+                        <input
+                            type="email"
+                            name="email"
+                            placeholder="name@company.com"
+                            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors"
+                            value={formData.email}
+                            onChange={handleChange}
+                        />
                     </div>
 
-                    {/* Social Buttons */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <button className="btn-secondary px-4 py-3 flex items-center justify-center gap-2">
-                            <span>🔵</span> Google
-                        </button>
-                        <button className="btn-secondary px-4 py-3 flex items-center justify-center gap-2">
-                            <span>⚫</span> GitHub
-                        </button>
+                    <div className="space-y-1">
+                        <label className="text-sm font-medium text-slate-300">Password</label>
+                        <input
+                            type="password"
+                            name="password"
+                            placeholder="••••••••"
+                            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors"
+                            value={formData.password}
+                            onChange={handleChange}
+                        />
                     </div>
-                </motion.div>
 
-                {/* Toggle Auth Mode */}
-                <motion.p variants={staggerItem} className="text-center mt-6 text-slate-400">
-                    {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
-                    <button
-                        onClick={() => setIsLogin(!isLogin)}
-                        className="text-indigo-400 hover:text-indigo-300 font-medium"
+                    <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        type="submit"
+                        className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-colors shadow-lg shadow-blue-600/20"
                     >
-                        {isLogin ? 'Sign Up' : 'Sign In'}
-                    </button>
-                </motion.p>
+                        {isSignup ? 'Sign Up' : 'Log In'}
+                    </motion.button>
 
-                {/* Back to Home */}
-                <motion.div variants={staggerItem} className="text-center mt-4">
-                    <a href="/" className="text-sm text-slate-500 hover:text-slate-400">
-                        ← Back to Home
-                    </a>
-                </motion.div>
-            </motion.div>
-        </div>
+                    <div className="text-center mt-4">
+                        <Link
+                            to={`/auth?mode=${isSignup ? 'login' : 'signup'}`}
+                            className="text-sm text-slate-400 hover:text-white hover:underline transition-colors"
+                        >
+                            {isSignup ? 'Already have an account? Log in' : "Don't have an account? Sign up"}
+                        </Link>
+                    </div>
+                </form>
+            </div>
+        </motion.div>
     );
 };
 

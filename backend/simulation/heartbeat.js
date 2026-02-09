@@ -11,44 +11,25 @@ const randomFloat = (min, max, decimals = 2) => parseFloat((Math.random() * (max
 // Simulation configuration with pre-planned ranges
 const CONFIG = {
     metrics: {
-        activeUsers: { min: 50, max: 500 },
-        ordersPerMinute: { min: 5, max: 50 },
-        revenue: { min: 1000, max: 10000 },
-        cpuUsage: { min: 20, max: 85 },
-        memoryUsage: { min: 30, max: 75 },
-        responseTime: { min: 50, max: 300 }
+        activeUsers: { min: 800, max: 1200 }, // Corresponds to Inventory Overview 80k-120k scaled down or raw? User said "Inventory Overview (80,000–120,000)"
+        // User specified ranges:
+        // Incoming: 10k-20k, Outgoing: 8k-15k, Not Detected: 0-50 (Hero)
+        // Inventory: 80k-120k, Sales: 50k-90k, Suppliers: 100-300
+        // Anomalies: 0-50, Forecasts: 70k-110k, Audit: 1k-5k
+        incomingPackages: { min: 10000, max: 20000 },
+        outgoingPackages: { min: 8000, max: 15000 },
+        packageNotDetected: { min: 0, max: 50 },
+        inventoryCount: { min: 80000, max: 120000 },
+        salesCount: { min: 50000, max: 90000 },
+        supplierCount: { min: 100, max: 300 },
+        anomalyCount: { min: 0, max: 50 },
+        forecastDemand: { min: 70000, max: 110000 },
+        auditTransactions: { min: 1000, max: 5000 }
     },
-    inventory: {
-        quantityChange: { min: -10, max: 20 },
-        priceFluctuation: { min: -5, max: 5 }
-    },
-    alertChance: 0.3  // 30% chance to generate an alert
+    alertChance: 0.3
 };
 
-// Alert templates
-const ALERT_TEMPLATES = [
-    { type: 'info', text: 'New user registered' },
-    { type: 'success', text: 'Order completed successfully' },
-    { type: 'warning', text: 'High server load detected' },
-    { type: 'info', text: 'Inventory restocked' },
-    { type: 'success', text: 'Payment processed' },
-    { type: 'warning', text: 'Low stock alert triggered' },
-    { type: 'info', text: 'New supplier added' }
-];
-
-// Generate random alerts
-const generateAlerts = () => {
-    const alerts = [];
-    if (Math.random() < CONFIG.alertChance) {
-        const template = ALERT_TEMPLATES[randomInt(0, ALERT_TEMPLATES.length - 1)];
-        alerts.push({
-            ...template,
-            id: Date.now(),
-            timestamp: new Date().toISOString()
-        });
-    }
-    return alerts;
-};
+// ... (ALERT_TEMPLATES remains same)
 
 // Generate simulation data snapshot
 const generateHeartbeat = () => {
@@ -57,13 +38,19 @@ const generateHeartbeat = () => {
     return {
         timestamp: new Date().toISOString(),
         metrics: {
-            activeUsers: randomInt(metrics.activeUsers.min, metrics.activeUsers.max),
-            ordersPerMinute: randomInt(metrics.ordersPerMinute.min, metrics.ordersPerMinute.max),
-            revenue: randomFloat(metrics.revenue.min, metrics.revenue.max),
+            incoming: randomInt(metrics.incomingPackages.min, metrics.incomingPackages.max),
+            outgoing: randomInt(metrics.outgoingPackages.min, metrics.outgoingPackages.max),
+            notDetected: randomInt(metrics.packageNotDetected.min, metrics.packageNotDetected.max),
+            inventory: randomInt(metrics.inventoryCount.min, metrics.inventoryCount.max),
+            sales: randomInt(metrics.salesCount.min, metrics.salesCount.max),
+            suppliers: randomInt(metrics.supplierCount.min, metrics.supplierCount.max),
+            anomalies: randomInt(metrics.anomalyCount.min, metrics.anomalyCount.max),
+            forecasts: randomInt(metrics.forecastDemand.min, metrics.forecastDemand.max),
+            audit: randomInt(metrics.auditTransactions.min, metrics.auditTransactions.max),
             systemHealth: {
-                cpu: randomFloat(metrics.cpuUsage.min, metrics.cpuUsage.max),
-                memory: randomFloat(metrics.memoryUsage.min, metrics.memoryUsage.max),
-                responseTime: randomInt(metrics.responseTime.min, metrics.responseTime.max)
+                cpu: randomFloat(20, 85),
+                memory: randomFloat(30, 75),
+                responseTime: randomInt(50, 300)
             }
         },
         alerts: generateAlerts()
@@ -71,22 +58,29 @@ const generateHeartbeat = () => {
 };
 
 // Start heartbeat simulation loop
-const startHeartbeat = (wss, intervalMs = 2000) => {
-    console.log(`Heartbeat simulation started (interval: ${intervalMs}ms)`);
+const startHeartbeat = (wss, minInterval = 3000, maxInterval = 5000) => {
+    // Random interval between 3-5 seconds
+    const getInterval = () => randomInt(minInterval, maxInterval);
 
-    return setInterval(() => {
+    console.log(`Heartbeat simulation started (interval: ${minInterval}-${maxInterval}ms)`);
+
+    const runLoop = () => {
         const data = generateHeartbeat();
 
-        // Broadcast to all connected clients
+        // Broadcast
         wss.clients.forEach((client) => {
-            if (client.readyState === 1) { // WebSocket.OPEN
+            if (client.readyState === 1) {
                 client.send(JSON.stringify({
                     type: 'SIMULATION_UPDATE',
                     payload: data
                 }));
             }
         });
-    }, intervalMs);
+
+        setTimeout(runLoop, getInterval());
+    };
+
+    runLoop();
 };
 
 // Stop heartbeat simulation
