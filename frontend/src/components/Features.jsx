@@ -37,7 +37,6 @@ const features = [
 const Features = () => {
     return (
         <section className="section relative">
-            {/* Background */}
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-500/5 to-transparent" />
 
             <div className="container relative z-10">

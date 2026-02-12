@@ -53,7 +53,6 @@ const ForecastsPage = () => {
                             transition={{ delay: 0.2 }}
                             className="glass p-8 rounded-3xl border border-white/5 flex items-center justify-center relative overflow-hidden"
                         >
-                            {/* Animated Chart Line */}
                             <svg className="w-full h-32 overflow-visible" viewBox="0 0 100 50" preserveAspectRatio="none">
                                 <motion.path
                                     d="M0,50 Q25,10 50,30 T100,10"

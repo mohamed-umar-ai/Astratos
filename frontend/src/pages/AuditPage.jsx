@@ -18,7 +18,6 @@ const AuditPage = () => {
         return () => unsubscribe();
     }, []);
 
-    // Mock Audit Logs
     const logs = Array.from({ length: 15 }, (_, i) => ({
         id: `LOG-${5000 - i}`,
         action: ['Stock Update', 'System Login', 'Config Change', 'Export Data'][Math.floor(Math.random() * 4)],

@@ -1,8 +1,3 @@
-/**
- * Simulator - Generates randomized data within pre-planned ranges
- * Pushes updates to all connected WebSocket clients
- */
-
 const generateRandomInRange = (min, max) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 };
@@ -11,11 +6,10 @@ const generateRandomFloat = (min, max, decimals = 2) => {
     return parseFloat((Math.random() * (max - min) + min).toFixed(decimals));
 };
 
-// Simulation data ranges
 const SIMULATION_CONFIG = {
     inventory: {
         quantityChange: { min: -10, max: 20 },
-        priceFluctuation: { min: -5, max: 5 } // percentage
+        priceFluctuation: { min: -5, max: 5 }
     },
     metrics: {
         activeUsers: { min: 50, max: 500 },
@@ -27,7 +21,6 @@ const SIMULATION_CONFIG = {
     }
 };
 
-// Generate a full simulation snapshot
 const generateSimulationData = () => {
     const metrics = SIMULATION_CONFIG.metrics;
 
@@ -47,7 +40,6 @@ const generateSimulationData = () => {
     };
 };
 
-// Generate random alerts occasionally
 const generateRandomAlerts = () => {
     const alerts = [];
     const alertTypes = ['info', 'warning', 'success'];
@@ -59,7 +51,6 @@ const generateRandomAlerts = () => {
         { type: 'success', text: 'Payment processed' }
     ];
 
-    // 30% chance to generate an alert
     if (Math.random() < 0.3) {
         const randomAlert = messages[Math.floor(Math.random() * messages.length)];
         alerts.push({
@@ -72,7 +63,6 @@ const generateRandomAlerts = () => {
     return alerts;
 };
 
-// Start simulation loop
 const startSimulation = (wss, intervalMs = 2000) => {
     console.log(`Simulation started with ${intervalMs}ms interval`);
 
@@ -80,7 +70,7 @@ const startSimulation = (wss, intervalMs = 2000) => {
         const data = generateSimulationData();
 
         wss.clients.forEach((client) => {
-            if (client.readyState === 1) { // WebSocket.OPEN
+            if (client.readyState === 1) {
                 client.send(JSON.stringify({
                     type: 'SIMULATION_UPDATE',
                     payload: data

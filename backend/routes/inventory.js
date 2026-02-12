@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 
-// Mock inventory data
 let inventory = [
     { id: 1, name: 'Widget Pro', category: 'Electronics', quantity: 245, price: 29.99, status: 'In Stock' },
     { id: 2, name: 'Gadget X', category: 'Electronics', quantity: 12, price: 149.99, status: 'Low Stock' },
@@ -11,7 +10,6 @@ let inventory = [
     { id: 6, name: 'Sensor Unit', category: 'Electronics', quantity: 78, price: 19.99, status: 'In Stock' }
 ];
 
-// GET all inventory items
 router.get('/', (req, res) => {
     const { category, status, search } = req.query;
 
@@ -38,7 +36,6 @@ router.get('/', (req, res) => {
     });
 });
 
-// GET single inventory item
 router.get('/:id', (req, res) => {
     const item = inventory.find(i => i.id === parseInt(req.params.id));
 
@@ -49,7 +46,6 @@ router.get('/:id', (req, res) => {
     res.json({ success: true, data: item });
 });
 
-// POST new inventory item
 router.post('/', (req, res) => {
     const { name, category, quantity, price } = req.body;
 
@@ -70,7 +66,6 @@ router.post('/', (req, res) => {
     res.status(201).json({ success: true, data: newItem });
 });
 
-// PUT update inventory item
 router.put('/:id', (req, res) => {
     const index = inventory.findIndex(i => i.id === parseInt(req.params.id));
 
@@ -96,7 +91,6 @@ router.put('/:id', (req, res) => {
     res.json({ success: true, data: inventory[index] });
 });
 
-// DELETE inventory item
 router.delete('/:id', (req, res) => {
     const index = inventory.findIndex(i => i.id === parseInt(req.params.id));
 

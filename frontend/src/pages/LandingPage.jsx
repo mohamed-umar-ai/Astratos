@@ -16,7 +16,6 @@ import { Link } from 'react-router-dom';
 const LandingPage = () => {
     return (
         <motion.div {...pageTransition}>
-            {/* Header Navigation */}
             <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/5">
                 <div className="container mx-auto px-4 flex items-center justify-between py-4">
                     <div className="flex items-center gap-3">
@@ -27,7 +26,6 @@ const LandingPage = () => {
                     </div>
 
                     <div className="hidden md:flex items-center gap-8">
-                        {/* Mock Links with Hover Underline */}
                         {['Features', 'How it Works', 'Pricing'].map((item) => (
                             <span
                                 key={item}
@@ -55,7 +53,6 @@ const LandingPage = () => {
                 </div>
             </nav>
 
-            {/* Sections in Requested Order */}
             <Hero />
 
             <div className="space-y-12 pb-20">

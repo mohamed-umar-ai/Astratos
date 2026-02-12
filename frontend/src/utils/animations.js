@@ -1,6 +1,3 @@
-// Framer Motion animation variants and configurations
-
-// Fade in from bottom
 export const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
     visible: {
@@ -10,7 +7,6 @@ export const fadeInUp = {
     }
 };
 
-// Fade in from left
 export const fadeInLeft = {
     hidden: { opacity: 0, x: -30 },
     visible: {
@@ -20,7 +16,6 @@ export const fadeInLeft = {
     }
 };
 
-// Fade in from right
 export const fadeInRight = {
     hidden: { opacity: 0, x: 30 },
     visible: {
@@ -30,7 +25,6 @@ export const fadeInRight = {
     }
 };
 
-// Scale up effect
 export const scaleUp = {
     hidden: { opacity: 0, scale: 0.95 },
     visible: {
@@ -40,7 +34,6 @@ export const scaleUp = {
     }
 };
 
-// Stagger children
 export const staggerContainer = {
     hidden: { opacity: 0 },
     visible: {
@@ -52,7 +45,6 @@ export const staggerContainer = {
     }
 };
 
-// Stagger item (for use with staggerContainer)
 export const staggerItem = {
     hidden: { opacity: 0, y: 20 },
     visible: {
@@ -62,7 +54,6 @@ export const staggerItem = {
     }
 };
 
-// Page transition
 export const pageTransition = {
     initial: { opacity: 0, y: 10 },
     animate: {
@@ -77,7 +68,6 @@ export const pageTransition = {
     }
 };
 
-// Card hover effect
 export const cardHover = {
     rest: { scale: 1, boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)" },
     hover: {
@@ -87,12 +77,10 @@ export const cardHover = {
     }
 };
 
-// Button press effect
 export const buttonTap = {
     whileTap: { scale: 0.98 }
 };
 
-// Floating animation
 export const floatingAnimation = {
     animate: {
         y: [0, -10, 0],
@@ -104,7 +92,6 @@ export const floatingAnimation = {
     }
 };
 
-// Pulse animation
 export const pulseAnimation = {
     animate: {
         scale: [1, 1.05, 1],
@@ -117,7 +104,6 @@ export const pulseAnimation = {
     }
 };
 
-// Glow animation
 export const glowAnimation = {
     animate: {
         boxShadow: [
@@ -133,7 +119,6 @@ export const glowAnimation = {
     }
 };
 
-// Sidebar slide
 export const sidebarSlide = {
     hidden: { x: -280 },
     visible: {
@@ -146,13 +131,11 @@ export const sidebarSlide = {
     }
 };
 
-// Number counter animation config
 export const counterConfig = {
     duration: 0.5,
     ease: "easeOut"
 };
 
-// Chart bar animation
 export const chartBarAnimation = (index) => ({
     hidden: { scaleY: 0, originY: 1 },
     visible: {
@@ -165,7 +148,6 @@ export const chartBarAnimation = (index) => ({
     }
 });
 
-// List item animation
 export const listItemAnimation = (index) => ({
     hidden: { opacity: 0, x: -20 },
     visible: {

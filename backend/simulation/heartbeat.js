@@ -1,21 +1,9 @@
-/**
- * Heartbeat Simulation Module
- * Generates randomized numbers within pre-planned ranges
- * Pushes real-time updates to connected WebSocket clients
- */
-
-// Random number generators
 const randomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 const randomFloat = (min, max, decimals = 2) => parseFloat((Math.random() * (max - min) + min).toFixed(decimals));
 
-// Simulation configuration with pre-planned ranges
 const CONFIG = {
     metrics: {
-        activeUsers: { min: 800, max: 1200 }, // Corresponds to Inventory Overview 80k-120k scaled down or raw? User said "Inventory Overview (80,000–120,000)"
-        // User specified ranges:
-        // Incoming: 10k-20k, Outgoing: 8k-15k, Not Detected: 0-50 (Hero)
-        // Inventory: 80k-120k, Sales: 50k-90k, Suppliers: 100-300
-        // Anomalies: 0-50, Forecasts: 70k-110k, Audit: 1k-5k
+        activeUsers: { min: 800, max: 1200 },
         incomingPackages: { min: 10000, max: 20000 },
         outgoingPackages: { min: 8000, max: 15000 },
         packageNotDetected: { min: 0, max: 50 },
@@ -29,9 +17,6 @@ const CONFIG = {
     alertChance: 0.3
 };
 
-// ... (ALERT_TEMPLATES remains same)
-
-// Generate simulation data snapshot
 const generateHeartbeat = () => {
     const { metrics } = CONFIG;
 
@@ -57,9 +42,7 @@ const generateHeartbeat = () => {
     };
 };
 
-// Start heartbeat simulation loop
 const startHeartbeat = (wss, minInterval = 3000, maxInterval = 5000) => {
-    // Random interval between 3-5 seconds
     const getInterval = () => randomInt(minInterval, maxInterval);
 
     console.log(`Heartbeat simulation started (interval: ${minInterval}-${maxInterval}ms)`);
@@ -67,7 +50,6 @@ const startHeartbeat = (wss, minInterval = 3000, maxInterval = 5000) => {
     const runLoop = () => {
         const data = generateHeartbeat();
 
-        // Broadcast
         wss.clients.forEach((client) => {
             if (client.readyState === 1) {
                 client.send(JSON.stringify({
@@ -83,7 +65,6 @@ const startHeartbeat = (wss, minInterval = 3000, maxInterval = 5000) => {
     runLoop();
 };
 
-// Stop heartbeat simulation
 const stopHeartbeat = (intervalId) => {
     clearInterval(intervalId);
     console.log('Heartbeat simulation stopped');

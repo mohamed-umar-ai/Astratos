@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 
-// Generate mock audit trail data
 const generateAuditLogs = () => {
     const actions = ['Stock Update', 'Price Change', 'New Order', 'Restock', 'Adjustment', 'Delete Item', 'User Login', 'User Logout', 'Settings Changed'];
     const users = ['admin@astratos.com', 'john.doe@company.com', 'jane.smith@company.com', 'system'];
@@ -20,7 +19,6 @@ const generateAuditLogs = () => {
 
 let auditLogs = generateAuditLogs();
 
-// GET all audit logs with pagination
 router.get('/', (req, res) => {
     const { action, user, page = 1, limit = 20, search } = req.query;
 
@@ -55,7 +53,6 @@ router.get('/', (req, res) => {
     });
 });
 
-// GET audit log by ID
 router.get('/:id', (req, res) => {
     const log = auditLogs.find(l => l.id === parseInt(req.params.id));
 
@@ -66,7 +63,6 @@ router.get('/:id', (req, res) => {
     res.json({ success: true, data: log });
 });
 
-// GET audit statistics
 router.get('/stats/summary', (req, res) => {
     const today = new Date().toDateString();
     const stats = {
@@ -82,7 +78,6 @@ router.get('/stats/summary', (req, res) => {
     res.json({ success: true, data: stats });
 });
 
-// POST new audit entry (for logging actions)
 router.post('/', (req, res) => {
     const { action, user, item, details, ipAddress } = req.body;
 
@@ -104,7 +99,6 @@ router.post('/', (req, res) => {
     res.status(201).json({ success: true, data: newLog });
 });
 
-// GET available actions for filtering
 router.get('/meta/actions', (req, res) => {
     const uniqueActions = [...new Set(auditLogs.map(log => log.action))];
     res.json({ success: true, data: uniqueActions });

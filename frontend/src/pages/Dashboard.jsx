@@ -63,9 +63,6 @@ const Dashboard = () => {
             <Sidebar />
 
             <main className="flex-1 ml-0 md:ml-0 p-8 pt-20 transition-all duration-300">
-                {/* Note: Sidebar is now overlay/slide-in, so standard margin might not apply or be different. 
-                    Based on Sidebar component, it's fixed slide-in. So main content is full width.
-                */}
 
                 <div className="container mx-auto max-w-5xl">
                     <header className="mb-12 flex justify-between items-end">
@@ -82,10 +79,8 @@ const Dashboard = () => {
                         </motion.button>
                     </header>
 
-                    {/* Stacked Sections as requested */}
                     <div className="space-y-8">
 
-                        {/* 1. Inventory Overview */}
                         <motion.section
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -119,7 +114,6 @@ const Dashboard = () => {
                             </div>
                         </motion.section>
 
-                        {/* 2. Sales Visualization */}
                         <motion.section
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -145,7 +139,6 @@ const Dashboard = () => {
                             </div>
                         </motion.section>
 
-                        {/* 3. Suppliers & Network */}
                         <motion.section
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}

@@ -25,10 +25,6 @@ const Section = ({ title, children, className = "" }) => {
     );
 };
 
-// 1. Features Section (Already exists but updating style)
-// We will use the existing Features component but wrap it or modify it. 
-// Actually, let's just create new simple components for these sections to match the exact requirement "mx-auto, flex, grid grid-cols-3 gap-6"
-
 export const NewFeatures = () => {
     const features = [
         { title: "Real-Time Tracking", desc: "Monitor stock levels with sub-second latency.", icon: "⚡" },
@@ -99,8 +95,8 @@ export const InventoryOverview = () => {
                                 <td className="p-4 text-slate-300">{item.stock}</td>
                                 <td className="p-4">
                                     <span className={`px-2 py-1 rounded-full text-xs ${item.status === 'In Stock' ? 'bg-green-500/20 text-green-400' :
-                                            item.status === 'Low Stock' ? 'bg-yellow-500/20 text-yellow-400' :
-                                                'bg-red-500/20 text-red-400'
+                                        item.status === 'Low Stock' ? 'bg-yellow-500/20 text-yellow-400' :
+                                            'bg-red-500/20 text-red-400'
                                         }`}>
                                         {item.status}
                                     </span>
@@ -156,7 +152,6 @@ export const AIFeatures = () => (
 export const HowItWorks = () => (
     <Section title="How It Works">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative">
-            {/* Connector Line (Desktop) */}
             <div className="hidden md:block absolute top-12 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500/0 via-blue-500/50 to-blue-500/0" />
 
             {[
@@ -209,7 +204,6 @@ export const Pricing = () => (
                     <button className={`w-full py-3 rounded-lg font-medium transition-colors ${plan.popular ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-white/10 hover:bg-white/20 text-white'}`}>
                         Choose {plan.name}
                     </button>
-                    {/* Note: User asked for "On click, no routing". Button does nothing by default here. */}
                 </motion.div>
             ))}
         </div>

@@ -13,25 +13,21 @@ const Auth = () => {
         password: ''
     });
 
-    // Simple mock validation error state
     const [error, setError] = useState('');
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
-        setError(''); // Clear error on typing
+        setError('');
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        // Simple validation
         if (!formData.email || !formData.password) {
             setError('Please fill in all required fields.');
             return;
         }
 
-        // Mock authentication success
-        // In a real app, you would call an API start session here
         navigate('/dashboard');
     };
 
@@ -40,11 +36,9 @@ const Auth = () => {
             {...pageTransition}
             className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
         >
-            {/* Background */}
             <div className="absolute inset-0 bg-gradient-to-br from-slate-900 to-black z-0" />
             <div className="absolute top-0 left-0 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 z-0 pointer-events-none" />
 
-            {/* Return to Home */}
             <Link to="/" className="absolute top-8 left-8 z-20 text-slate-400 hover:text-white flex items-center gap-2">
                 ← Back to Home
             </Link>

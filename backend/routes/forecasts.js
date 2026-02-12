@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 
-// Generate forecast data
 const generateForecasts = () => {
     const items = ['Widget Pro', 'Gadget X', 'Component A', 'Module Z', 'Device Pro', 'Sensor Unit'];
 
@@ -20,7 +19,6 @@ const generateForecasts = () => {
 
 let forecasts = generateForecasts();
 
-// GET all forecasts
 router.get('/', (req, res) => {
     const { trend, lowStock } = req.query;
 
@@ -41,7 +39,6 @@ router.get('/', (req, res) => {
     });
 });
 
-// GET forecast for specific item
 router.get('/:id', (req, res) => {
     const forecast = forecasts.find(f => f.id === parseInt(req.params.id));
 
@@ -52,7 +49,6 @@ router.get('/:id', (req, res) => {
     res.json({ success: true, data: forecast });
 });
 
-// GET forecast summary
 router.get('/stats/summary', (req, res) => {
     const stats = {
         totalItems: forecasts.length,
@@ -66,7 +62,6 @@ router.get('/stats/summary', (req, res) => {
     res.json({ success: true, data: stats });
 });
 
-// POST regenerate forecasts (simulate AI update)
 router.post('/regenerate', (req, res) => {
     forecasts = generateForecasts();
     res.json({

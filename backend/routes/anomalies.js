@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 
-// Generate mock anomalies
 const generateAnomalies = () => {
     const types = ['Stock Discrepancy', 'Unusual Sale Pattern', 'Price Anomaly', 'Supplier Issue', 'Demand Spike'];
     const severities = ['low', 'medium', 'high', 'critical'];
@@ -20,7 +19,6 @@ const generateAnomalies = () => {
 
 let anomalies = generateAnomalies();
 
-// GET all anomalies
 router.get('/', (req, res) => {
     const { severity, status } = req.query;
 
@@ -41,7 +39,6 @@ router.get('/', (req, res) => {
     });
 });
 
-// GET anomaly by ID
 router.get('/:id', (req, res) => {
     const anomaly = anomalies.find(a => a.id === parseInt(req.params.id));
 
@@ -52,7 +49,6 @@ router.get('/:id', (req, res) => {
     res.json({ success: true, data: anomaly });
 });
 
-// PUT resolve anomaly
 router.put('/:id/resolve', (req, res) => {
     const index = anomalies.findIndex(a => a.id === parseInt(req.params.id));
 
@@ -66,7 +62,6 @@ router.put('/:id/resolve', (req, res) => {
     res.json({ success: true, data: anomalies[index] });
 });
 
-// GET anomaly statistics
 router.get('/stats/summary', (req, res) => {
     const stats = {
         total: anomalies.length,

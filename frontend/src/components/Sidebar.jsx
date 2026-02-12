@@ -6,11 +6,6 @@ const Sidebar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const location = useLocation();
 
-    // Close sidebar on route change (mobile mostly)
-    // useEffect(() => setIsOpen(false), [location]); 
-    // Actually, keeping it open might be better for desktop, but for mobile usually we close.
-    // The requirement says "On click, slide-in sidebar".
-
     const toggleSidebar = () => setIsOpen(!isOpen);
 
     const links = [
@@ -22,7 +17,6 @@ const Sidebar = () => {
 
     return (
         <>
-            {/* Hamburger Button */}
             <button
                 onClick={toggleSidebar}
                 className="fixed top-4 left-4 z-50 p-2 rounded-lg glass hover:bg-white/10 transition-colors group"
@@ -35,7 +29,6 @@ const Sidebar = () => {
                 </div>
             </button>
 
-            {/* Backdrop */}
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
@@ -48,7 +41,6 @@ const Sidebar = () => {
                 )}
             </AnimatePresence>
 
-            {/* Sidebar Panel */}
             <motion.aside
                 initial={{ x: '-100%' }}
                 animate={{ x: isOpen ? 0 : '-100%' }}

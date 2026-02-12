@@ -1,5 +1,3 @@
-// WebSocket client for live heartbeat updates
-
 class WebSocketClient {
     constructor() {
         this.ws = null;
@@ -83,7 +81,6 @@ class WebSocketClient {
         }
         this.listeners.get(event).push(callback);
 
-        // Return unsubscribe function
         return () => {
             const callbacks = this.listeners.get(event);
             const index = callbacks.indexOf(callback);
@@ -115,12 +112,10 @@ class WebSocketClient {
     }
 }
 
-// Singleton instance
 const wsClient = new WebSocketClient();
 
 export default wsClient;
 
-// React hook for WebSocket
 export const useWebSocket = () => {
     return wsClient;
 };

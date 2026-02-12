@@ -71,7 +71,6 @@ const faqs = [
 const FakeSection = () => {
     return (
         <>
-            {/* Pricing Section */}
             <section className="section relative">
                 <div className="container">
                     <motion.div
@@ -101,8 +100,8 @@ const FakeSection = () => {
                                 variants={staggerItem}
                                 whileHover={{ y: -5 }}
                                 className={`rounded-2xl p-8 ${plan.highlighted
-                                        ? 'gradient-glow text-white'
-                                        : 'glass'
+                                    ? 'gradient-glow text-white'
+                                    : 'glass'
                                     }`}
                             >
                                 <h3 className="text-xl font-semibold mb-2">{plan.name}</h3>
@@ -127,8 +126,8 @@ const FakeSection = () => {
                                 </ul>
                                 <button
                                     className={`w-full py-3 rounded-xl font-semibold transition-all ${plan.highlighted
-                                            ? 'bg-white text-indigo-600 hover:bg-slate-100'
-                                            : 'btn-secondary'
+                                        ? 'bg-white text-indigo-600 hover:bg-slate-100'
+                                        : 'btn-secondary'
                                         }`}
                                 >
                                     Get Started
@@ -139,7 +138,6 @@ const FakeSection = () => {
                 </div>
             </section>
 
-            {/* Testimonials Section */}
             <section className="section relative bg-slate-900/50">
                 <div className="container">
                     <motion.div
@@ -182,7 +180,6 @@ const FakeSection = () => {
                 </div>
             </section>
 
-            {/* FAQ Section */}
             <section className="section">
                 <div className="container max-w-3xl">
                     <motion.div
@@ -227,7 +224,6 @@ const FakeSection = () => {
                 </div>
             </section>
 
-            {/* Footer */}
             <footer className="py-12 border-t border-slate-800">
                 <div className="container">
                     <div className="grid md:grid-cols-4 gap-8 mb-12">

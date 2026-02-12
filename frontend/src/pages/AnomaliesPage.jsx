@@ -17,7 +17,6 @@ const AnomaliesPage = () => {
         };
         const unsubscribe = wsClient.on('SIMULATION_UPDATE', handleUpdate);
 
-        // Mock data for table
         const mockData = Array.from({ length: 8 }, (_, i) => ({
             id: `ANOM-${1000 + i}`,
             severity: ['High', 'Critical', 'Medium', 'Low'][i % 4],
@@ -55,7 +54,6 @@ const AnomaliesPage = () => {
                             className="lg:col-span-2 glass p-6 rounded-2xl border border-white/5"
                         >
                             <h3 className="font-bold mb-4">Real-Time Detection Stream</h3>
-                            {/* Random Spikes Visualization */}
                             <div className="h-64 flex items-end gap-1">
                                 {[...Array(40)].map((_, i) => (
                                     <motion.div
@@ -111,9 +109,9 @@ const AnomaliesPage = () => {
                                         <td className="p-4">{item.type}</td>
                                         <td className="p-4">
                                             <span className={`px-2 py-1 rounded-full text-xs font-bold ${item.severity === 'Critical' ? 'bg-red-500 text-white' :
-                                                    item.severity === 'High' ? 'bg-orange-500 text-white' :
-                                                        item.severity === 'Medium' ? 'bg-yellow-500 text-black' :
-                                                            'bg-blue-500 text-white'
+                                                item.severity === 'High' ? 'bg-orange-500 text-white' :
+                                                    item.severity === 'Medium' ? 'bg-yellow-500 text-black' :
+                                                        'bg-blue-500 text-white'
                                                 }`}>
                                                 {item.severity}
                                             </span>
