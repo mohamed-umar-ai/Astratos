@@ -13,7 +13,7 @@ const Section = ({ title, children, className = "" }) => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={isInView ? { opacity: 1, y: 0 } : {}}
                     transition={{ duration: 0.6 }}
-                    className="text-3xl md:text-4xl font-bold text-center mb-16"
+                    className="text-3xl md:text-4xl lg:text-5xl font-light tracking-wide text-center mb-16"
                 >
                     {title}
                 </motion.h2>
@@ -48,8 +48,8 @@ export const NewFeatures = () => {
                         className="p-8 rounded-2xl glass hover:bg-white/5 transition-colors cursor-pointer group"
                     >
                         <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">{f.icon}</div>
-                        <h3 className="text-xl font-bold mb-3 text-white">{f.title}</h3>
-                        <p className="text-slate-400 group-hover:text-slate-300">{f.desc}</p>
+                        <h3 className="text-xl font-medium tracking-wide mb-4 text-white">{f.title}</h3>
+                        <p className="text-slate-400 font-light group-hover:text-slate-300">{f.desc}</p>
                     </motion.div>
                 ))}
             </motion.div>
@@ -120,16 +120,16 @@ export const AIFeatures = () => (
                 className="space-y-6"
             >
                 <div className="glass p-6 rounded-2xl border-l-4 border-purple-500">
-                    <h3 className="text-xl font-bold mb-2">Anomaly Detection</h3>
-                    <p className="text-slate-400">Algorithms scan for irregular patterns in sales and stock movements effectively.</p>
+                    <h3 className="text-xl font-medium tracking-wide mb-2">Anomaly Detection</h3>
+                    <p className="text-slate-400 font-light">Algorithms scan for irregular patterns in sales and stock movements effectively.</p>
                 </div>
                 <div className="glass p-6 rounded-2xl border-l-4 border-blue-500">
-                    <h3 className="text-xl font-bold mb-2">Predictive Ordering</h3>
-                    <p className="text-slate-400">Automatically suggests reorder points based on historical consumption rates.</p>
+                    <h3 className="text-xl font-medium tracking-wide mb-2">Predictive Ordering</h3>
+                    <p className="text-slate-400 font-light">Automatically suggests reorder points based on historical consumption rates.</p>
                 </div>
                 <div className="glass p-6 rounded-2xl border-l-4 border-pink-500">
-                    <h3 className="text-xl font-bold mb-2">Sentiment Analysis</h3>
-                    <p className="text-slate-400">Understand market trends through integrated social sentiment tracking.</p>
+                    <h3 className="text-xl font-medium tracking-wide mb-2">Sentiment Analysis</h3>
+                    <p className="text-slate-400 font-light">Understand market trends through integrated social sentiment tracking.</p>
                 </div>
             </motion.div>
             <motion.div
@@ -170,8 +170,8 @@ export const HowItWorks = () => (
                     <div className="w-16 h-16 mx-auto bg-slate-900 rounded-full border-2 border-blue-500 flex items-center justify-center text-xl font-bold mb-6 shadow-[0_0_20px_rgba(59,130,246,0.5)]">
                         {s.step}
                     </div>
-                    <h3 className="text-lg font-bold mb-2">{s.title}</h3>
-                    <p className="text-sm text-slate-400">{s.desc}</p>
+                    <h3 className="text-lg font-medium tracking-wide mb-2">{s.title}</h3>
+                    <p className="text-sm text-slate-400 font-light">{s.desc}</p>
                 </motion.div>
             ))}
         </div>
@@ -191,9 +191,9 @@ export const Pricing = () => (
                     whileHover={{ y: -10 }}
                     className={`p-8 rounded-2xl border ${plan.popular ? 'bg-gradient-to-b from-blue-900/40 to-slate-900 border-blue-500/50' : 'glass border-white/5'} flex flex-col pointer-events-auto hover:underline cursor-pointer transition-all`}
                 >
-                    <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
-                    <div className="text-4xl font-bold mb-2">{plan.price}<span className="text-lg text-slate-500 font-normal">/mo</span></div>
-                    <p className="text-slate-400 mb-6 text-sm">{plan.desc}</p>
+                    <h3 className="text-xl font-medium tracking-wide mb-2">{plan.name}</h3>
+                    <div className="text-4xl md:text-5xl font-light tracking-wide mb-2">{plan.price}<span className="text-lg text-slate-500 font-normal">/mo</span></div>
+                    <p className="text-slate-400 mb-6 font-light text-sm">{plan.desc}</p>
                     <ul className="mb-8 space-y-3 flex-1">
                         {plan.features.map((f, j) => (
                             <li key={j} className="flex items-center gap-2 text-sm text-slate-300">
@@ -222,7 +222,7 @@ export const Testimonials = () => (
                     whileHover={{ scale: 1.02 }}
                     className="glass p-8 rounded-2xl cursor-pointer hover:underline"
                 >
-                    <p className="text-lg text-slate-300 italic mb-6">"{t.quote}"</p>
+                    <p className="text-lg text-slate-300 font-light italic mb-6">"{t.quote}"</p>
                     <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-400 to-purple-500" />
                         <div>
@@ -249,8 +249,8 @@ export const FAQ = () => (
                     key={i}
                     className="glass p-6 rounded-xl cursor-pointer hover:underline hover:bg-white/5 transition-colors"
                 >
-                    <h3 className="font-bold text-lg mb-2 text-white">{faq.q}</h3>
-                    <p className="text-slate-400">{faq.a}</p>
+                    <h3 className="font-medium tracking-wide text-lg mb-2 text-white">{faq.q}</h3>
+                    <p className="text-slate-400 font-light">{faq.a}</p>
                 </motion.div>
             ))}
         </div>

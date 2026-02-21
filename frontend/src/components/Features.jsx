@@ -50,10 +50,10 @@ const Features = () => {
                     <span className="text-indigo-400 font-semibold text-sm uppercase tracking-wider">
                         Features
                     </span>
-                    <h2 className="text-4xl md:text-5xl font-bold mt-4 mb-6">
+                    <h2 className="text-4xl md:text-5xl font-light tracking-wide mt-4 mb-8">
                         Everything You Need
                     </h2>
-                    <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+                    <p className="text-slate-400 font-light text-lg max-w-2xl mx-auto">
                         Powerful tools to manage, monitor, and optimize your inventory operations.
                     </p>
                 </motion.div>
@@ -73,8 +73,8 @@ const Features = () => {
                             className="glass rounded-2xl p-6 card-hover"
                         >
                             <div className="text-4xl mb-4">{feature.icon}</div>
-                            <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                            <p className="text-slate-400">{feature.description}</p>
+                            <h3 className="text-xl font-medium tracking-wide mb-3">{feature.title}</h3>
+                            <p className="text-slate-400 font-light">{feature.description}</p>
                         </motion.div>
                     ))}
                 </motion.div>

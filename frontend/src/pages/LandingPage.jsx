@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion';
 import { pageTransition } from '../utils/animations';
 import Hero from '../components/Hero';
+import TrustedBy from '../components/TrustedBy';
+import KeyFeatures from '../components/KeyFeatures';
 import {
     NewFeatures as Features,
     InventoryOverview,
@@ -26,7 +28,7 @@ const LandingPage = () => {
                     </div>
 
                     <div className="hidden md:flex items-center gap-8">
-                        {['Features', 'How it Works', 'Pricing'].map((item) => (
+                        {['Features', 'About Us', 'Pricing', 'Contact'].map((item) => (
                             <span
                                 key={item}
                                 className="text-slate-400 hover:text-white hover:underline cursor-pointer transition-colors font-medium"
@@ -44,9 +46,9 @@ const LandingPage = () => {
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
-                                className="bg-white text-black px-5 py-2 rounded-full font-bold hover:bg-slate-200 transition-colors"
+                                className="bg-white text-black px-2 py-1 rounded-full font-semibold tracking-wide hover:bg-slate-200 transition-colors"
                             >
-                                Get Started
+                                Start free trial
                             </motion.button>
                         </Link>
                     </div>
@@ -54,6 +56,8 @@ const LandingPage = () => {
             </nav>
 
             <Hero />
+            <TrustedBy />
+            <KeyFeatures />
 
             <div className="space-y-12 pb-20">
                 <Features />
