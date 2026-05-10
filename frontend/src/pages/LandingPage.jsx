@@ -59,7 +59,7 @@ const LandingPage = () => {
             <TrustedBy />
             <KeyFeatures />
 
-            <div className="space-y-12 pb-20">
+            <div className="space-y-4 pb-8">
                 <Features />
                 <InventoryOverview />
                 <AIFeatures />

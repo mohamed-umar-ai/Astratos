@@ -3,10 +3,12 @@ import { motion } from 'framer-motion';
 import wsClient from '../utils/websocket';
 import Sidebar from '../components/Sidebar';
 import { fadeInUp, staggerContainer } from '../utils/animations';
+import UnfinishedModal from '../components/UnfinishedModal';
 
 const AnomaliesPage = () => {
     const [count, setCount] = useState(0);
     const [anomalies, setAnomalies] = useState([]);
+    const [showModal, setShowModal] = useState(true);
 
     useEffect(() => {
         wsClient.connect();
@@ -28,6 +30,15 @@ const AnomaliesPage = () => {
 
         return () => unsubscribe();
     }, []);
+
+    if (showModal) {
+        return (
+            <div className="min-h-screen bg-slate-950 text-white flex">
+                <Sidebar />
+                <UnfinishedModal onProceed={() => setShowModal(false)} />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-slate-950 text-white flex">

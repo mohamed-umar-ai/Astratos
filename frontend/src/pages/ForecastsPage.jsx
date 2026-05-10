@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import wsClient from '../utils/websocket';
 import Sidebar from '../components/Sidebar';
+import UnfinishedModal from '../components/UnfinishedModal';
 
 const ForecastsPage = () => {
     const [demand, setDemand] = useState(0);
+    const [showModal, setShowModal] = useState(true);
 
     useEffect(() => {
         wsClient.connect();
@@ -16,6 +18,15 @@ const ForecastsPage = () => {
         const unsubscribe = wsClient.on('SIMULATION_UPDATE', handleUpdate);
         return () => unsubscribe();
     }, []);
+
+    if (showModal) {
+        return (
+            <div className="min-h-screen bg-slate-950 text-white flex">
+                <Sidebar />
+                <UnfinishedModal onProceed={() => setShowModal(false)} />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-slate-950 text-white flex">

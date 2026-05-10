@@ -10,6 +10,9 @@ class WebSocketClient {
     }
 
     connect() {
+        if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
+            return;
+        }
         try {
             this.ws = new WebSocket(this.url);
 

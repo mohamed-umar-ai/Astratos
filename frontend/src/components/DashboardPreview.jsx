@@ -106,11 +106,11 @@ const DashboardPreview = () => {
             initial={{ opacity: 0, y: 100 }}
             animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 100 }}
             transition={{ duration: 1, ease: "easeOut" }}
-            className="w-full max-w-6xl mx-auto mt-12 relative"
+            className="w-full max-w-8xl mx-auto mt-12 relative scale-[1.11]"
         >
             <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl overflow-hidden">
                 <div className="flex">
-                    <div className="w-64 bg-white/5 border-r border-white/10 p-6 hidden lg:block">
+                    <div className="w-80 bg-white/5 border-r border-white/10 p-6 hidden lg:block">
                         <div className="flex items-center gap-3 mb-8">
                             <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
                                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -146,7 +146,7 @@ const DashboardPreview = () => {
                         </div>
                     </div>
 
-                    <div className="flex-1 p-6">
+                    <div className="flex-1 p-10">
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="text-2xl font-bold text-white">Warehouse Inventory</h2>
                             <div className="flex items-center gap-3">
@@ -171,7 +171,7 @@ const DashboardPreview = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <StatCard
                                 title="Incoming Package"
                                 value={30089}

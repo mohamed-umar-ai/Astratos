@@ -6,6 +6,8 @@ import Dashboard from './pages/Dashboard';
 import AnomaliesPage from './pages/AnomaliesPage';
 import ForecastsPage from './pages/ForecastsPage';
 import AuditPage from './pages/AuditPage';
+import AdminDashboard from './pages/AdminDashboard';
+import OperatorDashboard from './pages/OperatorDashboard';
 import './styles/tailwind.css';
 
 function App() {
@@ -19,6 +21,9 @@ function App() {
           <Route path="/anomalies" element={<AnomaliesPage />} />
           <Route path="/forecasts" element={<ForecastsPage />} />
           <Route path="/audit" element={<AuditPage />} />
+          <Route path="/operator" element={<OperatorDashboard />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/:tab" element={<AdminDashboard />} />
         </Routes>
       </AnimatePresence>
     </Router>

@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { fadeInUp, staggerContainer } from '../utils/animations';
 
@@ -7,13 +7,13 @@ const Section = ({ title, children, className = "" }) => {
     const isInView = useInView(ref, { once: true, margin: "-100px" });
 
     return (
-        <section ref={ref} className={`py-20 ${className}`}>
+        <section ref={ref} className={`py-8 ${className}`}>
             <div className="container mx-auto px-4">
                 <motion.h2
                     initial={{ opacity: 0, y: 20 }}
                     animate={isInView ? { opacity: 1, y: 0 } : {}}
                     transition={{ duration: 0.6 }}
-                    className="text-3xl md:text-4xl lg:text-5xl font-light tracking-wide text-center mb-16"
+                    className="text-3xl md:text-4xl lg:text-5xl font-light tracking-wide text-center mb-6"
                 >
                     {title}
                 </motion.h2>
@@ -39,15 +39,15 @@ export const NewFeatures = () => {
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true }}
-                className="grid grid-cols-1 md:grid-cols-3 gap-8"
+                className="grid grid-cols-1 md:grid-cols-3 gap-6"
             >
                 {features.map((f, i) => (
                     <motion.div
                         key={i}
                         variants={fadeInUp}
-                        className="p-8 rounded-2xl glass hover:bg-white/5 transition-colors cursor-pointer group"
+                        className="p-6 rounded-2xl glass hover:bg-white/5 transition-colors cursor-pointer group"
                     >
-                        <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">{f.icon}</div>
+                        <div className="text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">{f.icon}</div>
                         <h3 className="text-xl font-medium tracking-wide mb-4 text-white">{f.title}</h3>
                         <p className="text-slate-400 font-light group-hover:text-slate-300">{f.desc}</p>
                     </motion.div>
@@ -77,10 +77,10 @@ export const InventoryOverview = () => {
                 <table className="w-full text-left">
                     <thead className="bg-white/5 text-slate-300">
                         <tr>
-                            <th className="p-4">SKU</th>
-                            <th className="p-4">Item Name</th>
-                            <th className="p-4">Stock Level</th>
-                            <th className="p-4">Status</th>
+                            <th className="px-4 py-3">SKU</th>
+                            <th className="px-4 py-3">Item Name</th>
+                            <th className="px-4 py-3">Stock Level</th>
+                            <th className="px-4 py-3">Status</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -90,10 +90,10 @@ export const InventoryOverview = () => {
                                 variants={fadeInUp}
                                 className="border-t border-white/5 hover:bg-white/5 transition-colors"
                             >
-                                <td className="p-4 font-mono text-sm text-slate-400">{item.id}</td>
-                                <td className="p-4 font-medium text-white">{item.name}</td>
-                                <td className="p-4 text-slate-300">{item.stock}</td>
-                                <td className="p-4">
+                                <td className="px-4 py-3 font-mono text-sm text-slate-400">{item.id}</td>
+                                <td className="px-4 py-3 font-medium text-white">{item.name}</td>
+                                <td className="px-4 py-3 text-slate-300">{item.stock}</td>
+                                <td className="px-4 py-3">
                                     <span className={`px-2 py-1 rounded-full text-xs ${item.status === 'In Stock' ? 'bg-green-500/20 text-green-400' :
                                         item.status === 'Low Stock' ? 'bg-yellow-500/20 text-yellow-400' :
                                             'bg-red-500/20 text-red-400'
@@ -112,31 +112,31 @@ export const InventoryOverview = () => {
 
 export const AIFeatures = () => (
     <Section title="AI-Powered Intelligence">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <motion.div
                 initial={{ opacity: 0, x: -50 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8 }}
-                className="space-y-6"
+                className="space-y-4"
             >
-                <div className="glass p-6 rounded-2xl border-l-4 border-purple-500">
-                    <h3 className="text-xl font-medium tracking-wide mb-2">Anomaly Detection</h3>
-                    <p className="text-slate-400 font-light">Algorithms scan for irregular patterns in sales and stock movements effectively.</p>
+                <div className="glass p-5 rounded-2xl border-l-4 border-purple-500">
+                    <h3 className="text-lg font-medium tracking-wide mb-1">Anomaly Detection</h3>
+                    <p className="text-slate-400 font-light text-sm">Algorithms scan for irregular patterns in sales and stock movements effectively.</p>
                 </div>
-                <div className="glass p-6 rounded-2xl border-l-4 border-blue-500">
-                    <h3 className="text-xl font-medium tracking-wide mb-2">Predictive Ordering</h3>
-                    <p className="text-slate-400 font-light">Automatically suggests reorder points based on historical consumption rates.</p>
+                <div className="glass p-5 rounded-2xl border-l-4 border-blue-500">
+                    <h3 className="text-lg font-medium tracking-wide mb-1">Predictive Ordering</h3>
+                    <p className="text-slate-400 font-light text-sm">Automatically suggests reorder points based on historical consumption rates.</p>
                 </div>
-                <div className="glass p-6 rounded-2xl border-l-4 border-pink-500">
-                    <h3 className="text-xl font-medium tracking-wide mb-2">Sentiment Analysis</h3>
-                    <p className="text-slate-400 font-light">Understand market trends through integrated social sentiment tracking.</p>
+                <div className="glass p-5 rounded-2xl border-l-4 border-pink-500">
+                    <h3 className="text-lg font-medium tracking-wide mb-1">Sentiment Analysis</h3>
+                    <p className="text-slate-400 font-light text-sm">Understand market trends through integrated social sentiment tracking.</p>
                 </div>
             </motion.div>
             <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.8 }}
-                className="glass rounded-3xl p-8 aspect-square flex items-center justify-center relative overflow-hidden group"
+                className="glass rounded-3xl p-6 aspect-square flex items-center justify-center relative overflow-hidden group"
             >
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 to-blue-600/20 group-hover:opacity-100 transition-opacity" />
                 <div className="relative z-10 text-center">
@@ -151,8 +151,8 @@ export const AIFeatures = () => (
 
 export const HowItWorks = () => (
     <Section title="How It Works">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative">
-            <div className="hidden md:block absolute top-12 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500/0 via-blue-500/50 to-blue-500/0" />
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 relative">
+            <div className="hidden md:block absolute top-6 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500/0 via-blue-500/50 to-blue-500/0" />
 
             {[
                 { step: "01", title: "Connect", desc: "Integrate with your existing ERP or POS system." },
@@ -167,10 +167,10 @@ export const HowItWorks = () => (
                     transition={{ delay: i * 0.1 }}
                     className="relative z-10 text-center"
                 >
-                    <div className="w-16 h-16 mx-auto bg-slate-900 rounded-full border-2 border-blue-500 flex items-center justify-center text-xl font-bold mb-6 shadow-[0_0_20px_rgba(59,130,246,0.5)]">
+                    <div className="w-12 h-12 mx-auto bg-slate-900 rounded-full border-2 border-blue-500 flex items-center justify-center text-lg font-bold mb-4 shadow-[0_0_20px_rgba(59,130,246,0.5)]">
                         {s.step}
                     </div>
-                    <h3 className="text-lg font-medium tracking-wide mb-2">{s.title}</h3>
+                    <h3 className="text-base font-medium tracking-wide mb-1">{s.title}</h3>
                     <p className="text-sm text-slate-400 font-light">{s.desc}</p>
                 </motion.div>
             ))}
@@ -178,41 +178,51 @@ export const HowItWorks = () => (
     </Section>
 );
 
-export const Pricing = () => (
-    <Section title="Simple Pricing">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-                { name: "Starter", price: "$0", desc: "Perfect for pilots", features: ["100 SKUs", "Real-time updates", "Basic Alerts"] },
-                { name: "Pro", price: "$49", desc: "For growing teams", features: ["Unlimited SKUs", "Advanced AI", "Priority Support"], popular: true },
-                { name: "Enterprise", price: "Custom", desc: "For large scale", features: ["Dedicated Server", "Custom API", "SLA Guarantee"] }
-            ].map((plan, i) => (
-                <motion.div
-                    key={i}
-                    whileHover={{ y: -10 }}
-                    className={`p-8 rounded-2xl border ${plan.popular ? 'bg-gradient-to-b from-blue-900/40 to-slate-900 border-blue-500/50' : 'glass border-white/5'} flex flex-col pointer-events-auto hover:underline cursor-pointer transition-all`}
-                >
-                    <h3 className="text-xl font-medium tracking-wide mb-2">{plan.name}</h3>
-                    <div className="text-4xl md:text-5xl font-light tracking-wide mb-2">{plan.price}<span className="text-lg text-slate-500 font-normal">/mo</span></div>
-                    <p className="text-slate-400 mb-6 font-light text-sm">{plan.desc}</p>
-                    <ul className="mb-8 space-y-3 flex-1">
-                        {plan.features.map((f, j) => (
-                            <li key={j} className="flex items-center gap-2 text-sm text-slate-300">
-                                <span className="text-blue-400">✓</span> {f}
-                            </li>
-                        ))}
-                    </ul>
-                    <button className={`w-full py-3 rounded-lg font-medium transition-colors ${plan.popular ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-white/10 hover:bg-white/20 text-white'}`}>
-                        Choose {plan.name}
-                    </button>
-                </motion.div>
-            ))}
-        </div>
-    </Section>
-);
+export const Pricing = () => {
+    const [hoveredIndex, setHoveredIndex] = useState(null);
+
+    return (
+        <Section title="Simple Pricing">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {[
+                    { name: "Starter", price: "$0", desc: "Perfect for pilots", features: ["100 SKUs", "Real-time updates", "Basic Alerts"] },
+                    { name: "Pro", price: "$49", desc: "For growing teams", features: ["Unlimited SKUs", "Advanced AI", "Priority Support"], popular: true },
+                    { name: "Enterprise", price: "Custom", desc: "For large scale", features: ["Dedicated Server", "Custom API", "SLA Guarantee"] }
+                ].map((plan, i) => {
+                    const isHighlighted = hoveredIndex !== null ? hoveredIndex === i : plan.popular;
+
+                    return (
+                        <motion.div
+                            key={i}
+                            whileHover={{ y: -10 }}
+                            onHoverStart={() => setHoveredIndex(i)}
+                            onHoverEnd={() => setHoveredIndex(null)}
+                            className={`p-6 rounded-2xl border ${isHighlighted ? 'bg-gradient-to-b from-blue-900/40 to-slate-900 border-blue-500/50' : 'glass border-white/5'} flex flex-col pointer-events-auto cursor-pointer transition-all duration-300`}
+                        >
+                            <h3 className="text-xl font-medium tracking-wide mb-1">{plan.name}</h3>
+                            <div className="text-3xl md:text-4xl font-light tracking-wide mb-1">{plan.price}<span className="text-base text-slate-500 font-normal">/mo</span></div>
+                            <p className="text-slate-400 mb-4 font-light text-sm">{plan.desc}</p>
+                            <ul className="mb-6 space-y-2 flex-1">
+                                {plan.features.map((f, j) => (
+                                    <li key={j} className="flex items-center gap-2 text-sm text-slate-300">
+                                        <span className="text-blue-400">✓</span> {f}
+                                    </li>
+                                ))}
+                            </ul>
+                            <button className={`w-full py-3 rounded-lg font-medium transition-colors ${isHighlighted ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-white/10 hover:bg-white/20 text-white'}`}>
+                                Choose {plan.name}
+                            </button>
+                        </motion.div>
+                    );
+                })}
+            </div>
+        </Section>
+    );
+};
 
 export const Testimonials = () => (
     <Section title="Trusted by Leaders">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[
                 { name: "Sarah Connor", role: "Ops Director, Skynet", quote: "Astratos completely transformed how we manage our termination... err, manufacturing supplies." },
                 { name: "Tony Stark", role: "CEO, Stark Ind", quote: "The AI predictions are Jarvis-level. I can monitor global inventory from my suit." }
@@ -220,9 +230,9 @@ export const Testimonials = () => (
                 <motion.div
                     key={i}
                     whileHover={{ scale: 1.02 }}
-                    className="glass p-8 rounded-2xl cursor-pointer hover:underline"
+                    className="glass p-6 rounded-2xl cursor-pointer hover:underline"
                 >
-                    <p className="text-lg text-slate-300 font-light italic mb-6">"{t.quote}"</p>
+                    <p className="text-base text-slate-300 font-light italic mb-4">"{t.quote}"</p>
                     <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-400 to-purple-500" />
                         <div>
@@ -238,7 +248,7 @@ export const Testimonials = () => (
 
 export const FAQ = () => (
     <Section title="Frequently Asked Questions">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
             {[
                 { q: "Is it really real-time?", a: "Yes, updates are pushed via WebSocket with <50ms latency." },
                 { q: "Can I export data?", a: "Absolutely. Export to CSV, PDF, or connect via API." },
@@ -247,7 +257,7 @@ export const FAQ = () => (
             ].map((faq, i) => (
                 <motion.div
                     key={i}
-                    className="glass p-6 rounded-xl cursor-pointer hover:underline hover:bg-white/5 transition-colors"
+                    className="glass p-5 rounded-xl cursor-pointer hover:underline hover:bg-white/5 transition-colors"
                 >
                     <h3 className="font-medium tracking-wide text-lg mb-2 text-white">{faq.q}</h3>
                     <p className="text-slate-400 font-light">{faq.a}</p>

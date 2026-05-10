@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { pageTransition } from '../utils/animations';
+import axios from 'axios';
+
+const API_URL = 'http://localhost:5000/api/auth';
 
 const Auth = () => {
     const [searchParams] = useSearchParams();
@@ -10,25 +13,68 @@ const Auth = () => {
 
     const [formData, setFormData] = useState({
         email: '',
-        password: ''
+        password: '',
+        confirmPassword: ''
     });
 
     const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
         setError('');
+        setSuccess('');
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setError('');
+        setSuccess('');
 
         if (!formData.email || !formData.password) {
             setError('Please fill in all required fields.');
             return;
         }
 
-        navigate('/dashboard');
+        if (isSignup && formData.password !== formData.confirmPassword) {
+            setError('Passwords do not match.');
+            return;
+        }
+
+        if (isSignup) {
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+            if (!passwordRegex.test(formData.password)) {
+                setError('Password must contain at least 8 characters, one UPPERCASE, one lowercase, one number, and one special character (@$!%*?&).');
+                return;
+            }
+        }
+
+        setLoading(true);
+
+        try {
+            if (isSignup) {
+                await axios.post(`${API_URL}/register`, {
+                    email: formData.email,
+                    password: formData.password
+                });
+                setSuccess('Account created successfully! You can now log in.');
+                setFormData({ email: '', password: '', confirmPassword: '' });
+            } else {
+                const response = await axios.post(`${API_URL}/login`, {
+                    email: formData.email,
+                    password: formData.password
+                });
+                localStorage.setItem('token', response.data.token);
+                localStorage.setItem('role', response.data.role);
+                navigate('/dashboard');
+            }
+        } catch (err) {
+            const message = err.response?.data?.message || 'Something went wrong. Please try again.';
+            setError(message);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -65,6 +111,16 @@ const Auth = () => {
                                 {error}
                             </motion.div>
                         )}
+                        {success && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0 }}
+                                className="bg-green-500/10 border border-green-500/50 text-green-400 px-4 py-2 rounded-lg text-sm text-center"
+                            >
+                                {success}
+                            </motion.div>
+                        )}
                     </AnimatePresence>
 
                     <div className="space-y-1">
@@ -91,13 +147,33 @@ const Auth = () => {
                         />
                     </div>
 
+                    {isSignup && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="space-y-1"
+                        >
+                            <label className="text-sm font-medium text-slate-300">Confirm Password</label>
+                            <input
+                                type="password"
+                                name="confirmPassword"
+                                placeholder="••••••••"
+                                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors"
+                                value={formData.confirmPassword}
+                                onChange={handleChange}
+                            />
+                        </motion.div>
+                    )}
+
                     <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         type="submit"
-                        className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-colors shadow-lg shadow-blue-600/20"
+                        disabled={loading}
+                        className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-colors shadow-lg shadow-blue-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        {isSignup ? 'Sign Up' : 'Log In'}
+                        {loading ? 'Please wait...' : isSignup ? 'Sign Up' : 'Log In'}
                     </motion.button>
 
                     <div className="text-center mt-4">

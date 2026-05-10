@@ -1,15 +1,23 @@
 import { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Sidebar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const location = useLocation();
+    const navigate = useNavigate();
 
     const toggleSidebar = () => setIsOpen(!isOpen);
 
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('role');
+        navigate('/auth');
+    };
+
     const links = [
         { path: '/dashboard', label: 'Dashboard', icon: '📊' },
+        { path: '/operator', label: 'Operator', icon: '⚡' },
         { path: '/anomalies', label: 'Anomalies', icon: '🚨' },
         { path: '/forecasts', label: 'Forecasts', icon: '🔮' },
         { path: '/audit', label: 'Audit Trail', icon: '📝' },
@@ -80,7 +88,7 @@ const Sidebar = () => {
                         ))}
                     </nav>
 
-                    <div className="absolute bottom-8 left-6 right-6">
+                    <div className="absolute bottom-8 left-6 right-6 space-y-3">
                         <div className="p-4 rounded-xl glass bg-gradient-to-br from-white/5 to-transparent">
                             <div className="text-xs text-slate-400 mb-1">Status</div>
                             <div className="flex items-center gap-2">
@@ -88,6 +96,13 @@ const Sidebar = () => {
                                 <span className="text-sm font-medium text-green-400">System Online</span>
                             </div>
                         </div>
+                        <button
+                            onClick={handleLogout}
+                            className="w-full px-4 py-3 rounded-xl text-sm font-medium text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors flex items-center gap-3 border border-red-500/10"
+                        >
+                            <span>🚪</span>
+                            <span>Log Out</span>
+                        </button>
                     </div>
                 </div>
             </motion.aside>

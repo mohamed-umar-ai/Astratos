@@ -3,8 +3,10 @@ import { motion } from 'framer-motion';
 import wsClient from '../utils/websocket';
 import Sidebar from '../components/Sidebar';
 import { fadeInUp, staggerContainer } from '../utils/animations';
+import PageGuardModal from '../components/PageGuardModal';
 
 const AuditPage = () => {
+    const role = localStorage.getItem('role');
     const [auditCount, setAuditCount] = useState(0);
 
     useEffect(() => {
@@ -25,6 +27,15 @@ const AuditPage = () => {
         ip: `192.168.1.${100 + i}`,
         time: new Date(Date.now() - i * 600000).toLocaleString()
     }));
+
+    if (role !== 'admin') {
+        return (
+            <div className="min-h-screen bg-slate-950 text-white flex">
+                <Sidebar />
+                <PageGuardModal title="Audit Logs Restricted" />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-slate-950 text-white flex">

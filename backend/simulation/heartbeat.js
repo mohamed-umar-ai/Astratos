@@ -17,6 +17,23 @@ const CONFIG = {
     alertChance: 0.3
 };
 
+const ALERT_TYPES = ['LOW_STOCK', 'ANOMALY_DETECTED', 'SUPPLIER_DELAY', 'DEMAND_SPIKE'];
+
+const generateAlerts = () => {
+    if (Math.random() > CONFIG.alertChance) return [];
+    const count = randomInt(1, 3);
+    const alerts = [];
+    for (let i = 0; i < count; i++) {
+        alerts.push({
+            type: ALERT_TYPES[randomInt(0, ALERT_TYPES.length - 1)],
+            severity: ['low', 'medium', 'high'][randomInt(0, 2)],
+            message: `Alert triggered at ${new Date().toISOString()}`,
+            timestamp: new Date().toISOString()
+        });
+    }
+    return alerts;
+};
+
 const generateHeartbeat = () => {
     const { metrics } = CONFIG;
 

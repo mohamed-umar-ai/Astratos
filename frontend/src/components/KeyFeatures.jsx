@@ -101,9 +101,9 @@ const FeatureCard = ({ title, description, delay, chartType }) => {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
-            transition={{ delay, duration: 0.6 }}
-            whileHover={{ y: -8, scale: 1.02 }}
-            className="bg-slate-900/40 backdrop-blur-md rounded-3xl p-10 border border-white/5 hover:border-blue-500/30 transition-all duration-300 hover:shadow-[0_0_30px_rgba(59,130,246,0.15)] group h-full flex flex-col w-full max-w-md mx-auto"
+            transition={{ delay, duration: 0 }}
+            whileHover={{ y: -10, scale: 1.05 }}
+            className="bg-slate-900/40 backdrop-blur-md rounded-3xl p-10 border border-white/5 h-full flex flex-col justify-between group transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/10 hover:border-white/20"
         >
             <div className="mb-10 bg-slate-950/80 rounded-2xl p-8 border border-white/5 group-hover:border-blue-500/20 transition-colors shadow-inner min-h-[220px] flex flex-col justify-center">
                 {renderChart()}
@@ -159,7 +159,7 @@ const KeyFeatures = () => {
     ];
 
     return (
-        <section ref={sectionRef} className="py-40 bg-slate-950 relative overflow-hidden">
+        <section ref={sectionRef} className="pt-12 pb-12 bg-slate-950 relative overflow-hidden">
             {/* Background Elements */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-blue-900/5 rounded-full blur-[150px] pointer-events-none" />
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-900/5 rounded-full blur-[120px] pointer-events-none" />
@@ -186,7 +186,7 @@ const KeyFeatures = () => {
                 </motion.div>
 
                 {/* Grid Container - Centered using Flexbox for 3 items */}
-                <div className="flex flex-col md:flex-row justify-center gap-8 lg:gap-12 max-w-7xl mx-auto px-4 md:px-0">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 max-w-7xl mx-auto px-4 items-stretch">
                     {features.map((feature, idx) => (
                         <FeatureCard
                             key={idx}

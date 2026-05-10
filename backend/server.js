@@ -5,11 +5,19 @@ const { WebSocketServer } = require('ws');
 const cors = require('cors');
 const connectDB = require('./db/mongoConfig');
 const { startHeartbeat } = require('./simulation/heartbeat');
+const { startOperatorSimulation, setSimulationWss } = require('./simulation/operatorSimulation');
 
 const inventoryRoutes = require('./routes/inventory');
 const anomaliesRoutes = require('./routes/anomalies');
 const forecastsRoutes = require('./routes/forecasts');
 const auditRoutes = require('./routes/audit');
+const authRoutes = require('./routes/auth');
+const adminRoutes = require('./routes/admin');
+const settingsRoutes = require('./routes/settings');
+const logsRoutes = require('./routes/logs');
+const operatorRoutes = require('./routes/operator');
+const simulatorRoutes = require('./routes/simulator');
+const suppliersRoutes = require('./routes/suppliers'); // [NEW] Suppliers logic
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -29,10 +37,19 @@ app.use('/api/inventory', inventoryRoutes);
 app.use('/api/anomalies', anomaliesRoutes);
 app.use('/api/forecasts', forecastsRoutes);
 app.use('/api/audit', auditRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/logs', logsRoutes);
+app.use('/api/operator', operatorRoutes);
+app.use('/api/simulation', simulatorRoutes); // [NEW] Mount simulator endpoints
+app.use('/api/suppliers', suppliersRoutes); // [NEW] Mount suppliers endpoints
 
 const server = http.createServer(app);
 
 const wss = new WebSocketServer({ server });
+app.set('wss', wss); // [NEW] Save wss on app for access in routes
+setSimulationWss(wss); // Ensure manual triggers can broadcast immediately
 
 wss.on('connection', (ws, req) => {
     const clientIp = req.socket.remoteAddress;
@@ -89,6 +106,7 @@ const startServer = async () => {
             `);
 
             startHeartbeat(wss, 2000);
+            // startOperatorSimulation(); // Disabled auto-start so user can control via "Live Traffic" button
         });
     } catch (error) {
         console.error('Failed to start server:', error);
