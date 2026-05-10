@@ -21,6 +21,22 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ['active', 'inactive'],
         default: 'active'
+    },
+    promotionRequested: {
+        type: Boolean,
+        default: false
+    },
+    justPromoted: {
+        type: Boolean,
+        default: false
+    },
+    promotionRejected: {
+        type: Boolean,
+        default: false
+    },
+    demotedToViewer: {
+        type: Boolean,
+        default: false
     }
 }, { timestamps: true });
 

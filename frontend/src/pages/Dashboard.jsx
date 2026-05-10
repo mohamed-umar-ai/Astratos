@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useWebSocket } from '../utils/websocket';
 import Sidebar from '../components/Sidebar';
 import LineChart from '../components/LineChart';
 import BarChart from '../components/BarChart';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const API_URL = 'http://localhost:5000/api/auth';
 
@@ -125,20 +127,406 @@ const OperatorPanel = ({ navigate }) => (
     </motion.section>
 );
 
-const ViewerBanner = () => (
-    <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.6 }}
-        className="glass p-6 rounded-3xl border border-blue-500/10 flex items-center gap-4"
-    >
-        <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center text-lg shrink-0">👁️</div>
-        <div>
-            <h3 className="font-semibold text-blue-400">Read-Only Access</h3>
-            <p className="text-slate-400 text-sm">You have viewer access. Contact an admin to request elevated permissions.</p>
-        </div>
-    </motion.div>
-);
+const ViewerBanner = () => {
+    const [requestStatus, setRequestStatus] = useState('idle');
+
+    const handleRequest = async () => {
+        try {
+            setRequestStatus('loading');
+            await axios.post('http://localhost:5000/api/auth/request-promotion', {}, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            });
+            setRequestStatus('sent');
+        } catch (err) {
+            setRequestStatus('error');
+        }
+    };
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            className="glass p-6 rounded-3xl border border-blue-500/10 flex flex-col sm:flex-row items-center justify-between gap-4"
+        >
+            <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center text-lg shrink-0">👁️</div>
+                <div>
+                    <h3 className="font-semibold text-blue-400">Read-Only Access</h3>
+                    <p className="text-slate-400 text-sm">You have viewer access. Contact an admin or request elevated permissions.</p>
+                </div>
+            </div>
+            <button 
+                onClick={handleRequest}
+                disabled={requestStatus !== 'idle'}
+                className="px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 text-sm font-semibold rounded-xl border border-blue-500/30 transition-colors disabled:opacity-50 whitespace-nowrap"
+            >
+                {requestStatus === 'idle' ? 'Request Operator Access' : 
+                 requestStatus === 'loading' ? 'Sending...' : 
+                 requestStatus === 'sent' ? 'Request Sent ✓' : 'Error Sending'}
+            </button>
+        </motion.div>
+    );
+};
+
+const CongratsScreen = ({ onDismiss }) => {
+    return (
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-slate-950 z-[100] flex flex-col items-center justify-center p-6 text-center"
+        >
+            <motion.div
+                initial={{ scale: 0.8, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                transition={{ type: 'spring', bounce: 0.5 }}
+                className="max-w-md"
+            >
+                <div className="w-24 h-24 bg-green-500/20 rounded-full flex items-center justify-center text-5xl mx-auto mb-6 shadow-[0_0_50px_rgba(34,197,94,0.3)]">
+                    🎉
+                </div>
+                <h1 className="text-4xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-600">Congratulations!</h1>
+                <p className="text-slate-300 text-lg mb-8 leading-relaxed">
+                    An admin has approved your request. You have been officially promoted to <span className="text-emerald-400 font-bold uppercase tracking-widest">Operator</span>.
+                    <br/><br/>
+                    You now have full access to process orders, manage stock, and oversee shipping logistics.
+                </p>
+                <button
+                    onClick={onDismiss}
+                    className="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-3 rounded-2xl font-bold shadow-lg shadow-emerald-500/30 transition-all hover:-translate-y-1"
+                >
+                    Access Dashboard
+                </button>
+            </motion.div>
+        </motion.div>
+    );
+};
+
+const RejectionScreen = ({ onDismiss }) => {
+    return (
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-slate-950 z-[100] flex flex-col items-center justify-center p-6 text-center"
+        >
+            <motion.div
+                initial={{ scale: 0.8, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                transition={{ type: 'spring', bounce: 0.5 }}
+                className="max-w-md"
+            >
+                <div className="w-24 h-24 bg-red-500/20 rounded-full flex items-center justify-center text-5xl mx-auto mb-6 shadow-[0_0_50px_rgba(239,68,68,0.3)]">
+                    💪
+                </div>
+                <h1 className="text-4xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-orange-600">Keep Pushing Forward</h1>
+                <p className="text-slate-300 text-lg mb-8 leading-relaxed">
+                    The administrator has reviewed your request but has decided not to grant <span className="text-orange-400 font-bold uppercase tracking-widest">Operator</span> access at this time.
+                    <br/><br/>
+                    <span className="italic text-slate-400">"Success is not final, failure is not fatal: it is the courage to continue that counts."</span>
+                </p>
+                <button
+                    onClick={onDismiss}
+                    className="bg-red-600 hover:bg-red-500 text-white px-8 py-3 rounded-2xl font-bold shadow-lg shadow-red-500/30 transition-all hover:-translate-y-1"
+                >
+                    Return to Dashboard
+                </button>
+            </motion.div>
+        </motion.div>
+    );
+};
+
+const DemotionScreen = ({ onDismiss }) => {
+    return (
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-slate-950 z-[100] flex flex-col items-center justify-center p-6 text-center"
+        >
+            <motion.div
+                initial={{ scale: 0.8, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                transition={{ type: 'spring', bounce: 0.5 }}
+                className="max-w-md"
+            >
+                <div className="w-24 h-24 bg-purple-500/20 rounded-full flex items-center justify-center text-5xl mx-auto mb-6 shadow-[0_0_50px_rgba(168,85,247,0.3)]">
+                    🌱
+                </div>
+                <h1 className="text-4xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-600">Access Restructured</h1>
+                <p className="text-slate-300 text-lg mb-8 leading-relaxed">
+                    An administrator has adjusted your account permissions. You have been placed into the <span className="text-indigo-400 font-bold uppercase tracking-widest">Viewer</span> role.
+                    <br/><br/>
+                    <span className="italic text-slate-400 font-medium">"A setback is just a setup for a powerful comeback. Take this time to observe and learn."</span>
+                </p>
+                <button
+                    onClick={onDismiss}
+                    className="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3 rounded-2xl font-bold shadow-lg shadow-indigo-500/30 transition-all hover:-translate-y-1"
+                >
+                    Acknowledge
+                </button>
+            </motion.div>
+        </motion.div>
+    );
+};
+
+const ViewerReportModal = ({ onClose }) => {
+    const [requestStatus, setRequestStatus] = useState('idle');
+
+    const handleRequest = async () => {
+        try {
+            setRequestStatus('loading');
+            await axios.post('http://localhost:5000/api/auth/request-promotion', {}, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            });
+            setRequestStatus('sent');
+        } catch (err) {
+            setRequestStatus('error');
+        }
+    };
+
+    return (
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+        >
+            <motion.div
+                initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+                className="glass p-8 rounded-3xl w-full max-w-md border border-white/10 shadow-2xl relative overflow-hidden"
+            >
+                <h3 className="text-2xl font-bold mb-4">Access Denied</h3>
+                <p className="text-slate-400 mb-6">You must be an Operator to access the report generation module. Would you like to request permission from an administrator?</p>
+                <div className="flex justify-end gap-3">
+                    <button onClick={onClose} className="px-5 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-colors font-medium">Cancel</button>
+                    <button 
+                        onClick={handleRequest}
+                        disabled={requestStatus !== 'idle'}
+                        className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2.5 rounded-xl shadow-lg transition-all font-medium disabled:opacity-50"
+                    >
+                        {requestStatus === 'idle' ? 'Request Permission' : 
+                         requestStatus === 'loading' ? 'Sending...' : 
+                         requestStatus === 'sent' ? 'Request Sent ✓' : 'Error Sending'}
+                    </button>
+                </div>
+            </motion.div>
+        </motion.div>
+    );
+};
+
+const OperatorReportModal = ({ onClose }) => {
+    const [status, setStatus] = useState('idle');
+
+    const fetchReportData = async () => {
+        const [stockRes, orderRes] = await Promise.all([
+            axios.get('http://localhost:5000/api/operator/stock'),
+            axios.get('http://localhost:5000/api/operator/orders')
+        ]);
+        return {
+            stock: stockRes.data.success ? stockRes.data.data : [],
+            orders: orderRes.data.success ? orderRes.data.data : []
+        };
+    };
+
+    const handleDownloadCSV = async () => {
+        setStatus('generating');
+        try {
+            const data = await fetchReportData();
+            
+            const salesCountByProduct = {};
+            data.orders.forEach(order => {
+                if (order.items) {
+                    order.items.forEach(item => {
+                        salesCountByProduct[item.product] = (salesCountByProduct[item.product] || 0) + item.quantity;
+                    });
+                }
+            });
+
+            const getMovingStatus = (productName, sku) => {
+                const soldQty = (salesCountByProduct[productName] || 0) + (salesCountByProduct[sku] || 0);
+                if (soldQty > 50) return 'Fast Moving';
+                if (soldQty > 10) return 'Moving';
+                return 'Low Moving';
+            };
+
+            let csv = 'Report Generated: ' + new Date().toLocaleString() + '\n\n';
+            csv += '--- INVENTORY STATUS ---\n';
+            csv += 'SKU,Name,Category,Quantity,Status,Unit Price\n';
+            data.stock.forEach(item => {
+                const movingStatus = getMovingStatus(item.name, item.sku);
+                csv += `"${item.sku}","${item.name}","${item.category}",${item.quantity},"${movingStatus}",$${item.price}\n`;
+            });
+
+            csv += '\n--- RECENT SALES ---\n';
+            csv += 'Order ID,Customer,Status,Total Amount,Date\n';
+            data.orders.slice(0, 50).forEach(order => {
+                const customerName = order.customer ? order.customer.name : 'Unknown';
+                csv += `"${order._id}","${customerName}","${order.status}",$${order.totalAmount},"${new Date(order.createdAt).toLocaleDateString()}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Astratos_Report_${new Date().getTime()}.csv`;
+            link.click();
+
+            setStatus('done');
+            setTimeout(onClose, 2000);
+        } catch (err) {
+            console.error(err);
+            setStatus('idle');
+            alert('Error generating CSV report.');
+        }
+    };
+
+    const handleDownloadPDF = async () => {
+        setStatus('generating');
+        try {
+            const data = await fetchReportData();
+            
+            const salesCountByProduct = {};
+            data.orders.forEach(order => {
+                if (order.items) {
+                    order.items.forEach(item => {
+                        salesCountByProduct[item.product] = (salesCountByProduct[item.product] || 0) + item.quantity;
+                    });
+                }
+            });
+
+            const getMovingStatus = (productName, sku) => {
+                const soldQty = (salesCountByProduct[productName] || 0) + (salesCountByProduct[sku] || 0);
+                if (soldQty > 50) return 'Fast Moving';
+                if (soldQty > 10) return 'Moving';
+                return 'Low Moving';
+            };
+
+            const doc = new jsPDF();
+            
+            doc.setFontSize(22);
+            doc.text('Astratos Supply Chain Report', 14, 22);
+            
+            doc.setFontSize(10);
+            doc.setTextColor(100);
+            doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+            doc.text(`Total SKUs: ${data.stock.length} | Total Sales volume: $${data.orders.reduce((a,b)=>a+(b.totalAmount||0),0).toLocaleString()}`, 14, 36);
+
+            doc.setFontSize(14);
+            doc.setTextColor(0);
+            doc.text('Inventory Status', 14, 48);
+
+            const inventoryBody = data.stock.map(item => [
+                item.sku,
+                item.name,
+                item.quantity.toString(),
+                getMovingStatus(item.name, item.sku),
+                `$${item.price}`
+            ]);
+
+            autoTable(doc, {
+                startY: 52,
+                head: [['SKU', 'Product Name', 'Qty', 'Status', 'Price']],
+                body: inventoryBody,
+                theme: 'grid',
+                headStyles: { fillColor: [59, 130, 246] },
+                styles: { fontSize: 9 }
+            });
+
+            let finalY = doc.lastAutoTable.finalY || 52;
+            doc.setFontSize(14);
+            doc.text('Recent Sales Operations', 14, finalY + 14);
+
+            const salesBody = data.orders.slice(0, 30).map(order => {
+                const customerName = order.customer ? order.customer.name : 'Unknown';
+                return [
+                    order._id.substring(0, 8) + '...',
+                    customerName,
+                    order.status,
+                    `$${order.totalAmount.toLocaleString()}`,
+                    new Date(order.createdAt).toLocaleDateString()
+                ];
+            });
+
+            autoTable(doc, {
+                startY: finalY + 18,
+                head: [['Order ID', 'Customer', 'Status', 'Total Amount', 'Date']],
+                body: salesBody,
+                theme: 'striped',
+                headStyles: { fillColor: [16, 185, 129] },
+                styles: { fontSize: 9 }
+            });
+
+            doc.save(`Astratos_Report_${new Date().getTime()}.pdf`);
+            
+            setStatus('done');
+            setTimeout(onClose, 2000);
+        } catch (err) {
+            console.error(err);
+            setStatus('idle');
+            alert('Error generating PDF report: ' + err.message);
+        }
+    };
+
+    return (
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+        >
+            <motion.div
+                initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+                className="glass p-8 rounded-3xl w-full max-w-md border border-white/10 shadow-2xl relative overflow-hidden"
+            >
+                <div className="flex items-center gap-4 mb-6">
+                    <div className="w-12 h-12 bg-blue-500/20 text-blue-400 rounded-xl flex items-center justify-center text-2xl">
+                        📊
+                    </div>
+                    <div>
+                        <h3 className="text-2xl font-bold">Export Report</h3>
+                        <p className="text-sm text-slate-400">Generate analytics data.</p>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                    <button 
+                        onClick={handleDownloadPDF}
+                        disabled={status !== 'idle'}
+                        className="p-6 rounded-2xl border border-white/10 bg-white/5 hover:bg-red-500/10 hover:border-red-500/30 transition-all flex flex-col items-center gap-3 disabled:opacity-50"
+                    >
+                        <span className="text-4xl text-red-400">📄</span>
+                        <span className="font-semibold text-slate-200">PDF Document</span>
+                        <span className="text-[10px] text-slate-400 text-center">Formatted for printing & presentation</span>
+                    </button>
+                    
+                    <button 
+                        onClick={handleDownloadCSV}
+                        disabled={status !== 'idle'}
+                        className="p-6 rounded-2xl border border-white/10 bg-white/5 hover:bg-emerald-500/10 hover:border-emerald-500/30 transition-all flex flex-col items-center gap-3 disabled:opacity-50"
+                    >
+                        <span className="text-4xl text-emerald-400">📊</span>
+                        <span className="font-semibold text-slate-200">CSV Data</span>
+                        <span className="text-[10px] text-slate-400 text-center">Raw data for Excel or processing</span>
+                    </button>
+                </div>
+
+                {status === 'generating' && (
+                    <div className="text-center text-sm text-blue-400 animate-pulse mb-4">
+                        Fetching data and generating report...
+                    </div>
+                )}
+                {status === 'done' && (
+                    <div className="text-center text-sm text-green-400 font-bold mb-4">
+                        Download complete!
+                    </div>
+                )}
+
+                <button onClick={onClose} className="w-full px-5 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-colors font-medium border border-white/5">Cancel</button>
+            </motion.div>
+        </motion.div>
+    );
+};
 
 const ScenarioController = () => {
     const [status, setStatus] = useState({ isRunning: false });
@@ -222,7 +610,12 @@ const Dashboard = () => {
     const navigate = useNavigate();
     const [userEmail, setUserEmail] = useState('');
     const [userRole, setUserRole] = useState('');
+    const [justPromoted, setJustPromoted] = useState(false);
+    const [promotionRejected, setPromotionRejected] = useState(false);
+    const [demotedToViewer, setDemotedToViewer] = useState(false);
     const [profileLoaded, setProfileLoaded] = useState(false);
+    const [showReportModal, setShowReportModal] = useState(false);
+    const [showExportModal, setShowExportModal] = useState(false);
 
     const [metrics, setMetrics] = useState({
         inventory: 0,
@@ -257,6 +650,15 @@ const Dashboard = () => {
                 });
                 setUserEmail(res.data.email);
                 setUserRole(res.data.role);
+                if (res.data.justPromoted) {
+                    setJustPromoted(true);
+                }
+                if (res.data.promotionRejected) {
+                    setPromotionRejected(true);
+                }
+                if (res.data.demotedToViewer) {
+                    setDemotedToViewer(true);
+                }
                 setProfileLoaded(true);
             } catch {
                 localStorage.removeItem('token');
@@ -472,8 +874,39 @@ const Dashboard = () => {
         );
     }
 
+    const handleDismissOverlay = async () => {
+        try {
+            await axios.post('http://localhost:5000/api/auth/acknowledge-promotion', {}, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            });
+            setJustPromoted(false);
+            setPromotionRejected(false);
+            setDemotedToViewer(false);
+        } catch (e) {
+            console.error(e);
+            setJustPromoted(false);
+            setPromotionRejected(false);
+            setDemotedToViewer(false);
+        }
+    };
+
+    const handleGenerateReport = () => {
+        if (userRole === 'viewer') {
+            setShowReportModal(true);
+        } else {
+            setShowExportModal(true);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-slate-950 text-white flex">
+            <AnimatePresence>
+                {justPromoted && <CongratsScreen onDismiss={handleDismissOverlay} />}
+                {promotionRejected && <RejectionScreen onDismiss={handleDismissOverlay} />}
+                {demotedToViewer && <DemotionScreen onDismiss={handleDismissOverlay} />}
+                {showReportModal && <ViewerReportModal onClose={() => setShowReportModal(false)} />}
+                {showExportModal && <OperatorReportModal onClose={() => setShowExportModal(false)} />}
+            </AnimatePresence>
             <Sidebar />
 
             <main className="flex-1 ml-0 md:ml-0 p-8 pt-20 transition-all duration-300">
@@ -496,6 +929,7 @@ const Dashboard = () => {
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
+                                onClick={handleGenerateReport}
                                 className="btn-primary"
                             >
                                 Generate Report
@@ -504,7 +938,7 @@ const Dashboard = () => {
                     </header>
 
                     <div className="space-y-8">
-                        <ScenarioController />
+                        {userRole === 'admin' && <ScenarioController />}
 
                         {userRole === 'admin' && <AdminPanel navigate={navigate} />}
                         {userRole === 'operator' && <OperatorPanel navigate={navigate} />}

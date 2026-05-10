@@ -261,6 +261,18 @@ router.post('/stock/transfer', async (req, res) => {
 
 // ================= SHIPPING =================
 
+router.post('/stock/delete', async (req, res) => {
+    try {
+        const { id } = req.body;
+        const stock = await Stock.findByIdAndDelete(id);
+        if (!stock) return res.status(404).json({ success: false, message: 'Stock not found' });
+        await logAudit('Stock Deleted', 'operator', stock.name, `Removed entirely`);
+        res.json({ success: true, data: stock });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
 router.get('/shipping', async (req, res) => {
     try {
         const shipments = await Shipment.find().populate('orderId').sort({ createdAt: -1 });

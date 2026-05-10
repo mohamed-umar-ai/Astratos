@@ -89,10 +89,45 @@ router.post('/login', requireDB, async (req, res) => {
 
 router.get('/profile', verifyToken, async (req, res) => {
     try {
-        res.json({ email: req.user.email, role: req.user.role });
+        const user = await User.findById(req.user.id);
+        res.json({ 
+            email: req.user.email, 
+            role: req.user.role, 
+            justPromoted: user?.justPromoted || false, 
+            promotionRejected: user?.promotionRejected || false,
+            demotedToViewer: user?.demotedToViewer || false
+        });
     } catch (error) {
         console.error('Profile error:', error);
         res.status(500).json({ message: 'Server error fetching profile.' });
+    }
+});
+
+router.post('/request-promotion', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'viewer') {
+            return res.status(400).json({ message: 'Only viewers can request promotion.' });
+        }
+        await User.findByIdAndUpdate(req.user.id, { promotionRequested: true });
+        await Log.create({ type: 'security', user: req.user.email, message: 'User requested promotion to operator' });
+        res.json({ message: 'Promotion request sent to administrators.' });
+    } catch (error) {
+        console.error('Promotion request error:', error);
+        res.status(500).json({ message: 'Error submitting request.' });
+    }
+});
+
+router.post('/acknowledge-promotion', verifyToken, async (req, res) => {
+    try {
+        await User.findByIdAndUpdate(req.user.id, { 
+            justPromoted: false, 
+            promotionRejected: false,
+            demotedToViewer: false
+        });
+        res.json({ message: 'Notifications acknowledged.' });
+    } catch (error) {
+        console.error('Acknowledge promotion error:', error);
+        res.status(500).json({ message: 'Error acknowledging promotion.' });
     }
 });
 

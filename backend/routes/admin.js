@@ -43,9 +43,18 @@ router.post('/users', validatePassword, async (req, res) => {
 router.put('/users/:id', async (req, res) => {
     try {
         const { role, email, status } = req.body;
+        
+        const existingUser = await User.findById(req.params.id);
+        if (!existingUser) return res.status(404).json({ message: 'User not found' });
+        
+        const updateData = { role, email, status };
+        if (existingUser.role !== 'viewer' && role === 'viewer') {
+            updateData.demotedToViewer = true;
+        }
+
         const user = await User.findByIdAndUpdate(
             req.params.id,
-            { role, email, status },
+            updateData,
             { new: true, runValidators: true }
         ).select('-password');
         
@@ -55,6 +64,30 @@ router.put('/users/:id', async (req, res) => {
     } catch (error) {
         console.error('Error updating user:', error);
         res.status(500).json({ message: 'Error updating user' });
+    }
+});
+router.put('/users/:id/promotion', async (req, res) => {
+    try {
+        const { approve } = req.body;
+        const updateData = { promotionRequested: false };
+        if (approve) {
+            updateData.role = 'operator';
+            updateData.justPromoted = true;
+        } else {
+            updateData.promotionRejected = true;
+        }
+        const user = await User.findByIdAndUpdate(
+            req.params.id,
+            updateData,
+            { new: true, runValidators: true }
+        ).select('-password');
+        
+        await Log.create({ type: 'security', user: req.user.email, message: `${approve ? 'Approved' : 'Rejected'} promotion for user: ${user.email}` });
+        
+        res.json(user);
+    } catch (error) {
+        console.error('Error handling promotion:', error);
+        res.status(500).json({ message: 'Error handling promotion request' });
     }
 });
 

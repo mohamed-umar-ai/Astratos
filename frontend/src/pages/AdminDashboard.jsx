@@ -42,7 +42,7 @@ const ManageUsers = () => {
             fetchUsers();
         } catch (e) {
             console.error(e);
-            alert('Error saving user');
+            alert(e.response?.data?.message || 'Error saving user');
         }
     };
 
@@ -53,6 +53,16 @@ const ManageUsers = () => {
             fetchUsers();
         } catch (e) {
             console.error(e);
+        }
+    };
+
+    const handlePromotion = async (id, approve) => {
+        try {
+            await api.put(`/admin/users/${id}/promotion`, { approve });
+            fetchUsers();
+        } catch (e) {
+            console.error(e);
+            alert('Error handling promotion');
         }
     };
 
@@ -109,9 +119,20 @@ const ManageUsers = () => {
                                     </span>
                                 </td>
                                 <td className="p-4 text-sm text-slate-400">{new Date(u.createdAt).toLocaleDateString()}</td>
-                                <td className="p-4 text-right space-x-2">
-                                    <button onClick={() => openEdit(u)} className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded text-sm transition-colors border border-white/10 font-medium">Edit</button>
-                                    <button onClick={() => handleDelete(u._id)} className="px-3 py-1 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded text-sm transition-colors border border-red-500/20 font-medium">Delete</button>
+                                <td className="p-4">
+                                    <div className="flex flex-col items-end gap-2 w-full">
+                                        {u.promotionRequested && (
+                                            <div className="flex gap-1 border border-blue-500/30 rounded p-1 bg-blue-500/10 justify-center w-fit">
+                                                <span className="text-xs text-blue-300 px-1 py-0.5 flex items-center mr-1">Wants Operator:</span>
+                                                <button onClick={() => handlePromotion(u._id, true)} className="px-2 py-0.5 bg-green-500/20 hover:bg-green-500/40 text-green-400 rounded text-xs transition-colors">Accept</button>
+                                                <button onClick={() => handlePromotion(u._id, false)} className="px-2 py-0.5 bg-red-500/20 hover:bg-red-500/40 text-red-400 rounded text-xs transition-colors">Reject</button>
+                                            </div>
+                                        )}
+                                        <div className="flex justify-end gap-2 w-full">
+                                            <button onClick={() => openEdit(u)} className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded text-sm transition-colors border border-white/10 font-medium">Edit</button>
+                                            <button onClick={() => handleDelete(u._id)} className="px-3 py-1 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded text-sm transition-colors border border-red-500/20 font-medium">Delete</button>
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                         ))}

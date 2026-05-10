@@ -135,6 +135,9 @@ export default function ManageStockPanel() {
         } else if (actionType === 'transfer') {
           endpoint = '/api/operator/stock/transfer';
           payload = { id: selectedStockId, department };
+        } else if (actionType === 'delete') {
+          endpoint = '/api/operator/stock/delete';
+          payload = { id: selectedStockId };
         }
       }
 
@@ -322,6 +325,10 @@ export default function ManageStockPanel() {
             onClick={() => { setIsCreatingNew(false); setActionType('transfer'); }}
           >Transfer</button>
           <button
+            className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${!isCreatingNew && actionType === 'delete' ? 'bg-red-500 text-slate-100 shadow-md' : 'text-slate-400 hover:text-slate-200'}`}
+            onClick={() => { setIsCreatingNew(false); setActionType('delete'); }}
+          >Delete</button>
+          <button
             className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${isCreatingNew ? 'bg-emerald-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-slate-200'}`}
             onClick={() => setIsCreatingNew(true)}
           >New</button>
@@ -344,7 +351,7 @@ export default function ManageStockPanel() {
                   </select>
                 </div>
 
-                {actionType !== 'transfer' ? (
+                {actionType !== 'transfer' && actionType !== 'delete' ? (
                   <div>
                     <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Quantity</label>
                     <input
@@ -353,7 +360,7 @@ export default function ManageStockPanel() {
                       className="w-full bg-slate-900 border border-slate-700/50 text-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 transition-all"
                     />
                   </div>
-                ) : (
+                ) : actionType === 'transfer' ? (
                   <div>
                     <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">New Department</label>
                     <select
@@ -367,7 +374,7 @@ export default function ManageStockPanel() {
                       <option value="__ADD_NEW__">➕ Add New Department</option>
                     </select>
                   </div>
-                )}
+                ) : null}
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-4">
