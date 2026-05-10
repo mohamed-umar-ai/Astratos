@@ -4,19 +4,25 @@ const Order = require('../models/Order');
 const Stock = require('../models/Stock');
 const Shipment = require('../models/Shipment');
 const Log = require('../models/Log');
+const { verifyToken } = require('../middleware/auth');
+const { broadcast } = require('../simulation/operatorSimulation');
 
 const logAudit = async (action, user, item, details) => {
   try {
     await Log.create({
       type: action,
-      user: user || 'operator',
+      user: user || 'system',
       message: item || 'N/A',
       details: details || ''
     });
+    // Also broadcast a generic notification to refresh logs
+    broadcast('NOTIFICATION', { type: 'LOG_UPDATE', message: `Audit: ${action}` });
   } catch (err) {
     console.error('logAudit failed:', err.message);
   }
 };
+
+router.use(verifyToken);
 
 // ================= ORDERS =================
 
@@ -47,10 +53,9 @@ router.post('/orders/new', async (req, res) => {
         });
 
         const source = req.body._source === 'auto' ? 'Auto' : 'Manual';
-        await logAudit(`Order Created (${source})`, 'operator', order.customer?.name, `New order $${order.totalAmount?.toFixed(2)} with ${order.items?.length} items`);
+        await logAudit(`Order Created (${source})`, req.user.email, order.customer?.name, `New order $${order.totalAmount?.toFixed(2)} with ${order.items?.length} items`);
 
         // Sync with dashboard graphs
-        const { broadcast } = require('../simulation/operatorSimulation');
         broadcast('ORDER_CREATED', order);
         
         // Deduct inventory for manual orders
@@ -88,7 +93,8 @@ router.put('/orders/:id', async (req, res) => {
         let details = `Status → ${order.status}`;
         if (items) details += `, Items updated (${items.length})`;
         
-        await logAudit('Order Updated', 'operator', order.customer?.name, details);
+        await logAudit('Order Updated', req.user.email, order.customer?.name, details);
+        broadcast('ORDER_UPDATED', order);
         res.json({ success: true, data: order });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
@@ -105,7 +111,8 @@ router.delete('/orders/:id', async (req, res) => {
         }
         
         await Order.findByIdAndDelete(req.params.id);
-        await logAudit('Order Deleted', 'operator', order.customer?.name || 'Unknown', `Order ID: ${req.params.id}`);
+        await logAudit('Order Deleted', req.user.email, order.customer?.name || 'Unknown', `Order ID: ${req.params.id}`);
+        broadcast('ORDER_UPDATED', { _id: req.params.id, deleted: true });
         res.json({ success: true, message: 'Order deleted' });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
@@ -140,10 +147,9 @@ router.post('/orders/:id/ship', async (req, res) => {
             }
         }
 
-        await logAudit('Order Shipped', 'operator', order.customer?.name, `Shipped via ${carrier || 'auto-carrier'}`);
+        await logAudit('Order Shipped', req.user.email, order.customer?.name, `Shipped via ${carrier || 'auto-carrier'}`);
         
         // Instantly spike sales graph
-        const { broadcast } = require('../simulation/operatorSimulation');
         broadcast('SALES_UPDATE', order);
 
         res.json({ success: true, data: order });
@@ -212,14 +218,12 @@ router.post('/stock/add', async (req, res) => {
                  { $inc: { quantity: quantity } },
                  { new: true }
              );
-             await logAudit('Stock Added', 'operator', stock.name, `+${quantity} units (now ${stock.quantity})`);
-             const { broadcast } = require('../simulation/operatorSimulation');
+             await logAudit('Stock Added', req.user.email, stock.name, `+${quantity} units (now ${stock.quantity})`);
              broadcast('INVENTORY_UPDATE', { type: 'RESTOCK', item: stock.name, quantity: stock.quantity });
              return res.json({ success: true, data: stock });
         } else {
              const newStock = await Stock.create(req.body);
-             await logAudit('New Product Created', 'operator', newStock.name, `SKU: ${newStock.sku}, Qty: ${newStock.quantity}, Dept: ${newStock.department}`);
-             const { broadcast } = require('../simulation/operatorSimulation');
+             await logAudit('New Product Created', req.user.email, newStock.name, `SKU: ${newStock.sku}, Qty: ${newStock.quantity}, Dept: ${newStock.department}`);
              broadcast('INVENTORY_UPDATE', { type: 'RESTOCK', item: newStock.name, quantity: newStock.quantity });
              return res.status(201).json({ success: true, data: newStock });
         }
@@ -236,8 +240,7 @@ router.post('/stock/reduce', async (req, res) => {
             { $inc: { quantity: -quantity } },
             { new: true }
         );
-        await logAudit('Stock Reduced', 'operator', stock.name, `-${quantity} units (now ${stock.quantity})`);
-        const { broadcast } = require('../simulation/operatorSimulation');
+        await logAudit('Stock Reduced', req.user.email, stock.name, `-${quantity} units (now ${stock.quantity})`);
         broadcast('INVENTORY_UPDATE', { type: 'DECREASE', item: stock.name, quantity: stock.quantity });
         res.json({ success: true, data: stock });
     } catch (err) {
@@ -252,7 +255,8 @@ router.post('/stock/transfer', async (req, res) => {
         const oldDept = stock.department;
         stock.department = department;
         await stock.save();
-        await logAudit('Stock Transferred', 'operator', stock.name, `${oldDept} → ${department}`);
+        await logAudit('Stock Transferred', req.user.email, stock.name, `${oldDept} → ${department}`);
+        broadcast('INVENTORY_UPDATE', { type: 'TRANSFER', item: stock.name, quantity: stock.quantity });
         res.json({ success: true, data: stock });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
@@ -266,7 +270,8 @@ router.post('/stock/delete', async (req, res) => {
         const { id } = req.body;
         const stock = await Stock.findByIdAndDelete(id);
         if (!stock) return res.status(404).json({ success: false, message: 'Stock not found' });
-        await logAudit('Stock Deleted', 'operator', stock.name, `Removed entirely`);
+        await logAudit('Stock Deleted', req.user.email, stock.name, `Removed entirely`);
+        broadcast('INVENTORY_UPDATE', { type: 'DELETE', item: stock.name });
         res.json({ success: true, data: stock });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
@@ -285,7 +290,8 @@ router.get('/shipping', async (req, res) => {
 router.post('/shipping/new', async (req, res) => {
     try {
         const shipment = await Shipment.create(req.body);
-        await logAudit('Shipment Created', 'operator', shipment.carrier, `Tracking: ${shipment.trackingNumber}, Dest: ${shipment.destination}`);
+        await logAudit('Shipment Created', req.user.email, shipment.carrier, `Tracking: ${shipment.trackingNumber}, Dest: ${shipment.destination}`);
+        broadcast('SHIPMENT_CREATED', shipment);
         res.status(201).json({ success: true, data: shipment });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
@@ -304,7 +310,8 @@ router.post('/shipping/:id/update', async (req, res) => {
         if (req.body.status && req.body.status !== oldShipment.status) changes.push(`Status: ${oldShipment.status} → ${req.body.status}`);
         if (req.body.trackingNumber && req.body.trackingNumber !== oldShipment.trackingNumber) changes.push(`Tracking: ${req.body.trackingNumber}`);
         if (changes.length > 0) {
-            await logAudit('Shipment Updated', 'operator', shipment.carrier, changes.join(', '));
+            await logAudit('Shipment Updated', req.user.email, shipment.carrier, changes.join(', '));
+            broadcast('NOTIFICATION', { type: 'SHIPMENT_UPDATE', message: `Shipment ${shipment.trackingNumber} updated.` });
         }
         res.json({ success: true, data: shipment });
     } catch (err) {

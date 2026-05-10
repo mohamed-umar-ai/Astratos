@@ -3,6 +3,7 @@ const router = express.Router();
 const Setting = require('../models/Setting');
 const Log = require('../models/Log');
 const { verifyToken, roleCheck } = require('../middleware/auth');
+const { broadcast } = require('../simulation/operatorSimulation');
 
 router.use(verifyToken, roleCheck('admin'));
 
@@ -30,6 +31,7 @@ const handleSettingUpdate = (settingType) => async (req, res) => {
         );
         
         await Log.create({ type: 'system', user: req.user.email, message: `Updated ${settingType} settings` });
+        broadcast('SYSTEM_UPDATE');
         
         res.json({ message: `${settingType} settings saved successfully` });
     } catch (error) {

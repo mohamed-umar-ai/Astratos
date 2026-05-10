@@ -39,6 +39,7 @@ const logAudit = async (action, user, item, details) => {
       message: item || '',
       details: details || ''
     });
+    broadcast('NOTIFICATION', { type: 'LOG_UPDATE', message: `Audit: ${action}` });
   } catch (err) {
     console.error('logAudit failed:', err.message);
   }

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
+import { useWebSocket } from '../utils/websocket';
 
 const API_BASE = 'http://localhost:5000/api';
 
@@ -338,6 +339,7 @@ const ViewLogs = () => {
     const [logs, setLogs] = useState([]);
     const [filter, setFilter] = useState('all');
     const [search, setSearch] = useState('');
+    const wsClient = useWebSocket();
 
     const fetchLogs = async () => {
         try {
@@ -349,7 +351,25 @@ const ViewLogs = () => {
         }
     };
 
-    useEffect(() => { fetchLogs(); }, []);
+    useEffect(() => {
+        fetchLogs();
+        wsClient.connect();
+        
+        const updateLogs = () => fetchLogs();
+        
+        const u1 = wsClient.on('INVENTORY_UPDATE', updateLogs);
+        const u2 = wsClient.on('ORDER_CREATED', updateLogs);
+        const u3 = wsClient.on('ORDER_UPDATED', updateLogs);
+        const u4 = wsClient.on('NOTIFICATION', updateLogs);
+        const u5 = wsClient.on('SHIPMENT_CREATED', updateLogs);
+        const u6 = wsClient.on('SALES_UPDATE', updateLogs);
+        const u7 = wsClient.on('SYSTEM_UPDATE', updateLogs);
+        const u8 = wsClient.on('SECURITY_UPDATE', updateLogs);
+
+        return () => {
+            u1(); u2(); u3(); u4(); u5(); u6(); u7(); u8();
+        };
+    }, [wsClient]);
 
     const filteredLogs = logs
         .filter(l => filter === 'all' || l.type === filter)
@@ -394,40 +414,53 @@ const ViewLogs = () => {
                 ))}
             </div>
 
-            <div className="glass rounded-2xl overflow-x-auto border border-white/5 shadow-xl">
-                <table className="w-full text-left border-collapse min-w-[800px]">
-                    <thead>
-                        <tr className="border-b border-white/10 bg-slate-900/50 uppercase text-xs tracking-wider">
-                            <th className="p-4 font-semibold text-slate-400 w-48">Timestamp</th>
-                            <th className="p-4 font-semibold text-slate-400 w-32">Module</th>
-                            <th className="p-4 font-semibold text-slate-400 w-64">User / Actor</th>
-                            <th className="p-4 font-semibold text-slate-400">Event Details</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5 font-mono text-sm">
-                        {filteredLogs.map(l => (
-                            <tr key={l._id} className="hover:bg-white-[0.02] transition-colors">
-                                <td className="p-4 text-slate-500 whitespace-nowrap">
-                                    {new Date(l.createdAt).toLocaleDateString()} <span className="text-slate-600">|</span> {new Date(l.createdAt).toLocaleTimeString()}
-                                </td>
-                                <td className="p-4">
-                                    <span className={`px-2 py-0.5 rounded uppercase text-[10px] font-bold tracking-widest ${l.type === 'security' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
-                                        l.type === 'notification' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
-                                            'bg-white/5 text-slate-300 border border-white/5'
-                                        }`}>
-                                        {l.type}
-                                    </span>
-                                </td>
-                                <td className="p-4 text-blue-400">{l.user}</td>
-                                <td className="p-4 text-slate-300 truncate max-w-md">{l.message}</td>
+            {(filter === 'forecast' || filter === 'security' || filter === 'system') ? (
+                <div className="flex justify-center items-center py-20">
+                    <div className="glass p-8 rounded-3xl border border-white/5 text-center max-w-md shadow-2xl relative overflow-hidden bg-slate-900/50">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl" />
+                        <div className="text-5xl mb-4">🚧</div>
+                        <h3 className="text-xl font-bold text-white mb-2">Under Development</h3>
+                        <p className="text-slate-400 text-sm">
+                            Sorry, we are currently working on the <span className="uppercase font-semibold text-blue-400">{filter}</span> module. It will be available soon!
+                        </p>
+                    </div>
+                </div>
+            ) : (
+                <div className="glass rounded-2xl overflow-x-auto border border-white/5 shadow-xl">
+                    <table className="w-full text-left border-collapse min-w-[800px]">
+                        <thead>
+                            <tr className="border-b border-white/10 bg-slate-900/50 uppercase text-xs tracking-wider">
+                                <th className="p-4 font-semibold text-slate-400 w-48">Timestamp</th>
+                                <th className="p-4 font-semibold text-slate-400 w-32">Module</th>
+                                <th className="p-4 font-semibold text-slate-400 w-64">User / Actor</th>
+                                <th className="p-4 font-semibold text-slate-400">Event Details</th>
                             </tr>
-                        ))}
-                        {filteredLogs.length === 0 && (
-                            <tr><td colSpan="4" className="p-12 text-center text-slate-500 font-sans italic">No entries match the current filters.</td></tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody className="divide-y divide-white/5 font-mono text-sm">
+                            {filteredLogs.map(l => (
+                                <tr key={l._id} className="hover:bg-white-[0.02] transition-colors">
+                                    <td className="p-4 text-slate-500 whitespace-nowrap">
+                                        {new Date(l.createdAt).toLocaleDateString()} <span className="text-slate-600">|</span> {new Date(l.createdAt).toLocaleTimeString()}
+                                    </td>
+                                    <td className="p-4">
+                                        <span className={`px-2 py-0.5 rounded uppercase text-[10px] font-bold tracking-widest ${l.type === 'security' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
+                                            l.type === 'notification' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                                                'bg-white/5 text-slate-300 border border-white/5'
+                                            }`}>
+                                            {l.type}
+                                        </span>
+                                    </td>
+                                    <td className="p-4 text-blue-400">{l.user}</td>
+                                    <td className="p-4 text-slate-300 truncate max-w-md">{l.message}</td>
+                                </tr>
+                            ))}
+                            {filteredLogs.length === 0 && (
+                                <tr><td colSpan="4" className="p-12 text-center text-slate-500 font-sans italic">No entries match the current filters.</td></tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            )}
         </div>
     );
 };

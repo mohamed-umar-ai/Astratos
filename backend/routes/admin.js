@@ -5,6 +5,7 @@ const User = require('../models/User');
 const Log = require('../models/Log');
 const { verifyToken, roleCheck } = require('../middleware/auth');
 const { validatePassword } = require('../middleware/validation');
+const { broadcast } = require('../simulation/operatorSimulation');
 
 router.use(verifyToken, roleCheck('admin'));
 
@@ -30,6 +31,7 @@ router.post('/users', validatePassword, async (req, res) => {
         await newUser.save();
         
         await Log.create({ type: 'security', user: req.user.email, message: `Created new user: ${email}` });
+        broadcast('SECURITY_UPDATE');
         
         const userObj = newUser.toObject();
         delete userObj.password;
@@ -59,6 +61,7 @@ router.put('/users/:id', async (req, res) => {
         ).select('-password');
         
         await Log.create({ type: 'security', user: req.user.email, message: `Updated user: ${user.email}` });
+        broadcast('SECURITY_UPDATE');
         
         res.json(user);
     } catch (error) {
@@ -83,6 +86,7 @@ router.put('/users/:id/promotion', async (req, res) => {
         ).select('-password');
         
         await Log.create({ type: 'security', user: req.user.email, message: `${approve ? 'Approved' : 'Rejected'} promotion for user: ${user.email}` });
+        broadcast('SECURITY_UPDATE');
         
         res.json(user);
     } catch (error) {
@@ -96,6 +100,7 @@ router.delete('/users/:id', async (req, res) => {
         const user = await User.findByIdAndDelete(req.params.id);
         if (user) {
             await Log.create({ type: 'security', user: req.user.email, message: `Deleted user: ${user.email}` });
+            broadcast('SECURITY_UPDATE');
         }
         res.json({ message: 'User deleted successfully' });
     } catch (error) {

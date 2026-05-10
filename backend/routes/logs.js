@@ -22,17 +22,20 @@ router.post('/seed', async (req, res) => {
             return res.json({ message: 'Logs already seeded', count });
         }
 
+        const now = Date.now();
         const mockLogs = [
-            { type: 'login', user: 'admin@example.com', message: 'Admin login successful' },
-            { type: 'inventory', user: 'operator@example.com', message: 'Updated threshold for SKU-123' },
-            { type: 'forecast', user: 'system', message: 'Daily forecast generated' },
-            { type: 'security', user: 'system', message: 'Failed login attempt from 192.168.1.50' },
-            { type: 'notification', user: 'system', message: 'Low inventory alert sent for SKU-456' },
-            { type: 'login', user: 'viewer@example.com', message: 'Viewer login successful' },
-            { type: 'system', user: 'system', message: 'System heartbeat check ok' }
+            { type: 'login', user: 'admin@example.com', message: 'Admin login successful', createdAt: new Date(now - 60000) },
+            { type: 'system', user: 'system', message: 'System heartbeat check ok', createdAt: new Date(now - 55000) },
+            { type: 'notification', user: 'system', message: 'CRITICAL: Restock needed for SKU-123 (Stock < 10)', createdAt: new Date(now - 45000) },
+            { type: 'notification', user: 'system', message: 'CRITICAL: Restock needed for SKU-456 (Stock < 5)', createdAt: new Date(now - 40000) },
+            { type: 'inventory', user: 'operator@example.com', message: 'Restocked SKU-123 (+50 units)', createdAt: new Date(now - 30000) },
+            { type: 'notification', user: 'system', message: 'RESOLVED: SKU-123 has been restocked', createdAt: new Date(now - 25000) },
+            { type: 'inventory', user: 'operator@example.com', message: 'Updated threshold for SKU-789', createdAt: new Date(now - 20000) },
+            { type: 'login', user: 'operator@example.com', message: 'Operator login successful', createdAt: new Date(now - 15000) },
+            { type: 'system', user: 'system', message: 'Database backup completed', createdAt: new Date(now - 5000) }
         ];
         await Log.insertMany(mockLogs);
-        res.json({ message: 'Seeded logs successfully', count: mockLogs.length });
+        res.json({ message: 'Seeded fresh logs successfully', count: mockLogs.length });
     } catch (error) {
         console.error('Error seeding logs:', error);
         res.status(500).json({ message: 'Error seeding logs' });

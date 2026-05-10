@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -608,6 +608,14 @@ const ScenarioController = () => {
 
 const Dashboard = () => {
     const navigate = useNavigate();
+    const simTimeRef = useRef(Date.now());
+    
+    const advanceTime = () => {
+        // Advance by 2 to 4 minutes to simulate organic dashboard time progression
+        simTimeRef.current += Math.floor(Math.random() * 120000) + 120000;
+        return new Date(simTimeRef.current).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+    };
+
     const [userEmail, setUserEmail] = useState('');
     const [userRole, setUserRole] = useState('');
     const [justPromoted, setJustPromoted] = useState(false);
@@ -732,7 +740,7 @@ const Dashboard = () => {
                     });
                 }
 
-                // Populate historical jitter for an instantly alive chart (simulating past 3 minutes)
+                // Populate historical jitter for an instantly alive chart (simulating past 90 minutes)
                 const generateHistory = (current, isSales) => {
                     const arr = [];
                     let historicalTemp = current;
@@ -745,11 +753,14 @@ const Dashboard = () => {
                         historicalTemp = Math.max(0, historicalTemp + drift + bias);
                         
                         arr.unshift({
-                            label: new Date(Date.now() - (18 - i) * 10000).toLocaleTimeString(),
+                            label: new Date(simTimeRef.current - (i + 1) * 300000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }),
                             value: Math.round(historicalTemp)
                         });
                     }
-                    arr.push({ label: new Date().toLocaleTimeString(), value: current });
+                    arr.push({ 
+                        label: new Date(simTimeRef.current).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }), 
+                        value: current 
+                    });
                     return arr;
                 };
 
@@ -806,7 +817,7 @@ const Dashboard = () => {
                 setMetrics(prev => ({ ...prev, inventory: newInv, stockValue: res.data.data.totalValue }));
                 setGraphs(prev => ({
                     ...prev,
-                    inventory: [...prev.inventory.slice(-20), { label: new Date().toLocaleTimeString(), value: newInv }]
+                    inventory: [...prev.inventory.slice(-20), { label: advanceTime(), value: newInv }]
                 }));
             }
         };
@@ -816,7 +827,7 @@ const Dashboard = () => {
                 const newSales = prev.sales + (order.totalAmount || 0);
                 setGraphs(g => ({
                     ...g,
-                    sales: [...g.sales.slice(-20), { label: new Date().toLocaleTimeString(), value: newSales }]
+                    sales: [...g.sales.slice(-20), { label: advanceTime(), value: newSales }]
                 }));
                 return { ...prev, sales: newSales };
             });
